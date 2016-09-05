@@ -8,6 +8,7 @@ unsigned short timeRun = TIME_RUN_DEF;
 volatile unsigned char flagMuestreo = 0;
 unsigned short adc0[4] = {0,0,0,0};
 
+volatile unsigned int session_warning_up_channel_1_stage_time = 0;
 //--- Señal 1Hz (Half) ---//
 /*
 #define FIELD_PERCENT 			100
@@ -74,7 +75,7 @@ void SystemInit (void);		//dumb function en otro momento inicializaba clock aca
 
 int main (void)
 {
-
+	unsigned char i = 0;
 	unsigned char counter_keep_alive = 0;
 	//Configuracion de clock.
 	RCC_Config ();
@@ -113,9 +114,24 @@ int main (void)
 	Channel_3_Init();
 	Channel_4_Init();
 
+	//pruebo TIM5 100us step
+	for (i = 0; i < 250; i++)
+	{
+		if (LED1)
+			LED1_OFF;
+		else
+			LED1_ON;
+
+//		while (!session_warning_up_channel_1_stage_time);
+//
+//		session_warning_up_channel_1_stage_time = 100;	//10ms
+		Wait_ms(100);
+	}
+
+
 	UART_PC_Send("Ready! \r\n");
 
-	//mando ENABLE los canles
+	//mando ENABLE los canales
 	ENA_CH1_ON;
 	ENA_CH2_ON;
 	ENA_CH3_ON;
