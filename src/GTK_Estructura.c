@@ -1,4 +1,12 @@
-#include "GTK_Header.h"
+//#include "GTK_Header.h"
+
+#include "GTK_Estructura.h"
+#include "uart.h"
+//#include "flash_program.h"
+#include "GTK_Signal.h"
+#include "GTK_Hard.h"
+#include <string.h>
+#include <stdio.h>
 
 //stage 1:	warning up.
 //stage 2: 	plateau.

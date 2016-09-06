@@ -1,16 +1,5 @@
-//#include "GTK_Header.h"
 
-#include <stm32f10x.h>
-#include <stm32f10x_gpio.h>
-#include <stm32f10x_rcc.h>
-#include <stm32f10x_tim.h>
-#include <stm32f10x_adc.h>
-#include <stm32f10x_flash.h>
-#include <stm32f10x_usart.h>
-//#include <stm32f10x_exti.h>
-#include <misc.h>
-
-
+#include "stm32f10x.h"
 #include "GTK_Hard.h"
 #include "timer.h"
 #include "uart.h"

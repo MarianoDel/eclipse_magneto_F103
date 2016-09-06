@@ -1,4 +1,7 @@
-#include "GTK_Header.h"
+
+#include "uart.h"
+#include "GTK_Estructura.h"
+#include "stm32f10x_usart.h"
 
 //External variable.
 //General.
@@ -807,7 +810,7 @@ void UART1_Receive (void)
 	antenna_typedef 	antenna;
 	signal_typedef 		signal;
 	duration_typedef 	duration;
-	char buf[10];
+	//char buf[10];
 
 	if (msUART1rxTimeOut == 0)
 	{

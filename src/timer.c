@@ -1,4 +1,7 @@
-#include "GTK_Header.h"
+//#include "GTK_Header.h"
+
+#include "timer.h"
+#include "stm32f10x.h"
 
 extern unsigned short timeRun;
 //Wait_ms

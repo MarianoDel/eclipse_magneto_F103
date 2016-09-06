@@ -1,10 +1,32 @@
 #ifndef GTK_HARD_H_
 #define GTK_HARD_H_
 
+#include "stm32f10x_rcc.h"
+
 //--- Frecuencia del clock ---//
 //#define sysFREC48
 //#define sysFREC72_XTAL_8
 #define sysFREC72_XTAL_12
+
+//--- PARA FUNCIONAR SIN ANTENA CONECTADA ---//
+//#define FUNC_SIN_ANTENA_CH1
+//#define WITH_TEMP_CH1
+
+enum resultados
+{
+	NO_INIT = 0,
+	TRABAJANDO,
+	FIN_OK,
+	FIN_ERROR,
+	FIN_TIMEOUT
+};
+
+enum bool
+{
+	FALSE = 0,
+	TRUE = !FALSE
+};
+
 
 //--- Clock ---//
 void RCC_Config (void);

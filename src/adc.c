@@ -1,4 +1,6 @@
-#include "GTK_Header.h"
+
+#include "adc.h"
+#include "stm32f10x_adc.h"
 
 #define BUFF_ADC_DIMENSION 	8
 #define BUFF_ADC_DIVISION	3

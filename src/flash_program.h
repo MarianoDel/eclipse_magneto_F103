@@ -2,6 +2,7 @@
 #define FLASH_PROGRAM_H_
 
 #include "GTK_Estructura.h"
+#include "stm32f10x.h"
 
 #define SIZE_SLOT	82
 #define SLOT_BASE_ADDR (uint32_t)0x08060000

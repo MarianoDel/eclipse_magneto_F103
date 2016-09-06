@@ -27,26 +27,6 @@
 #include "flash_program.h"
 #include "GTK_Errors.h"
 
-//--- PARA FUNCIONAR SIN ANTENA CONECTADA ---//
-//#define FUNC_SIN_ANTENA_CH1
-//#define WITH_TEMP_CH1
-
-//--- PARA FRECUENCIA XTAL VER GTK_Hard.h ---//
-
-enum resultados
-{
-	NO_INIT = 0,
-	TRABAJANDO,
-	FIN_OK,
-	FIN_ERROR,
-	FIN_TIMEOUT
-};
-
-enum bool
-{
-	FALSE = 0,
-	TRUE = !FALSE
-};
 
 //Funciones de PWM.
 #define PWM1_Init() PWM_TIM1_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2))
@@ -92,27 +72,7 @@ enum bool
 #define UART_CH4_Send(data)	UART5Send(data)
 #define UART_CH4_Receive()	UART5_Receive ()
 */
-//CAMBIO MAGNETO V2.0 28-02-15
-#define UART_PC_Init() 		UART1_Config()
-#define UART_PC_Send(x) 	UART1Send(x)
-#define UART_PC_Receive()	UART1_Receive()
 
-#define UART_CH1_Init()		UART2_Config()
-#define UART_CH1_Send(x)	UART2Send(x)
-#define UART_CH1_Receive()	UART2_Receive()
-
-#define UART_CH2_Init()		UART3_Config()
-#define UART_CH2_Send(x)	UART3Send(x)
-#define UART_CH2_Receive()	UART3_Receive ()
-
-#define UART_CH3_Init()		UART4_Config()
-#define UART_CH3_Send(x)	UART4Send(x)
-#define UART_CH3_Receive()	UART4_Receive ()
-
-#define UART_CH4_Init()		UART5_Config()
-#define UART_CH4_Send(x)	UART5Send(x)
-#define UART_CH4_Receive()	UART5_Receive ()
-//FIN CAMBIO 28-02-15
 #define GTK_HALF_FULL_MASK	0x01
 #define GTK_SIN_TIME_MASK	0x02
 #define GTK_BEEPER_MASK 	0x04
