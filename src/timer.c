@@ -1,6 +1,10 @@
 
 #include "timer.h"
 #include "stm32f10x.h"
+#include "GTK_Signal.h"
+#include "adc.h"
+#include "uart.h"
+#include "misc.h"
 
 extern unsigned short timeRun;
 //Wait_ms

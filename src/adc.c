@@ -1,6 +1,9 @@
 
 #include "adc.h"
 #include "stm32f10x_adc.h"
+#include "misc.h"
+#include "GTK_Hard.h"
+
 
 #define BUFF_ADC_DIMENSION 	8
 #define BUFF_ADC_DIVISION	3

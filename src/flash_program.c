@@ -17,6 +17,7 @@
 #include "flash_program.h"
 #include "stm32f10x_flash.h"
 #include "stm32f10x.h"
+#include "GTK_Hard.h"
 
 //New buffer.
 #define USED_BUFFTEMP (84 + 17)

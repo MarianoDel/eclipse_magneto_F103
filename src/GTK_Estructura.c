@@ -2,7 +2,7 @@
 
 #include "GTK_Estructura.h"
 #include "uart.h"
-//#include "flash_program.h"
+#include "flash_program.h"
 #include "GTK_Signal.h"
 #include "GTK_Hard.h"
 #include <string.h>

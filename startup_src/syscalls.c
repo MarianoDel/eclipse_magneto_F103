@@ -235,20 +235,20 @@ extern char _ebss; // Defined by the linker
  */
 int _read(int file, char *ptr, int len)
 {
-  int n;
+//  int n;
   int num = 0;
   switch (file)
   {
     case STDIN_FILENO:
-      for (n = 0; n < len; n++)
-      {
-        while ((USART3->SR & USART_FLAG_RXNE) == (uint16_t) RESET)
-        {
-        }
-        char c = (char) (USART3->DR & (uint16_t) 0x01FF);
-        *ptr++ = c;
-        num++;
-      }
+//      for (n = 0; n < len; n++)
+//      {
+//        while ((USART3->SR & USART_FLAG_RXNE) == (uint16_t) RESET)
+//        {
+//        }
+//        char c = (char) (USART3->DR & (uint16_t) 0x01FF);
+//        *ptr++ = c;
+//        num++;
+//      }
       break;
     
   

@@ -2,6 +2,15 @@
 #include "uart.h"
 #include "GTK_Estructura.h"
 #include "stm32f10x_usart.h"
+#include "misc.h"
+#include "GTK_Signal.h"
+#include "GTK_Hard.h"
+#include "flash_program.h"
+#include "timer.h"
+
+#include <stdio.h>
+#include <string.h>
+
 
 //External variable.
 //General.

@@ -1,6 +1,8 @@
 #ifndef SIGNAL_H_
 #define SIGNAL_H_
 
+#include "GTK_Estructura.h"
+
 //--- New code ---//
 void Signal_TIM1MS (void);
 void TIM5_IRQHandler (void);

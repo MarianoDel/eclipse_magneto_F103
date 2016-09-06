@@ -11,6 +11,8 @@
 //#include <stm32f10x_exti.h>
 #include <misc.h>
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 
 //#include "string.h"
 //#include "stdio.h"

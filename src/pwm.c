@@ -3,6 +3,7 @@
 #include <stm32f10x.h>
 #include "GTK_Hard.h"
 #include "pwm.h"
+#include "stm32f10x_tim.h"
 
 /*
 #define DUTY_DEF  (1000 - duty)
