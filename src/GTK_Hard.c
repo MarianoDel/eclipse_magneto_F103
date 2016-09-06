@@ -39,13 +39,16 @@ void RCC_Config (void){
 
 	//CLK AHB. Max 72MHz.
 	RCC_HCLKConfig(RCC_SYSCLK_Div1);
+
 	//CLK APB1. Max 36MHZ.
 	RCC_PCLK1Config(RCC_HCLK_Div2);
-	//CLK APB2 Max 72MHz.
-	RCC_PCLK2Config(RCC_HCLK_Div2);
 
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	NVIC_SetPriority(SysTick_IRQn, 0);
+	//CLK APB2 Max 72MHz.
+	//RCC_PCLK2Config(RCC_HCLK_Div2);
+	RCC_PCLK2Config(RCC_HCLK_Div1);
+
+	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	//NVIC_SetPriority(SysTick_IRQn, 0);
 }
 
 //--- Tamper config ---//

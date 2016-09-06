@@ -55,7 +55,7 @@ void TIM7_Init(void)
 //			Quiero una interrupcion por ms CK_INT es 72MHz
 
 	//---- Clk ----//
-	if (!(RCC->APB1ENR |= 0x00000020))
+	if (!(RCC->APB1ENR & 0x00000020))
 		RCC->APB1ENR |= 0x00000020;
 
 	//--- Config ----//
@@ -63,7 +63,7 @@ void TIM7_Init(void)
 	//TIM7->ARR = 100;
 	TIM7->CNT = 0;
 	TIM7->PSC = 71;
-	TIM7->EGR = TIM_EGR_UG;
+	TIM7->EGR = TIM_EGR_UG; //update registers
 
 	// Enable timer ver UDIS
 	TIM7->DIER |= TIM_DIER_UIE;
@@ -91,7 +91,7 @@ void TIM6_Init(void)
 //			Quiero una interrupcion por ms CK_INT es 72MHz
 
 	//---- Clk ----//
-	if (!(RCC->APB1ENR |= 0x00000010))
+	if (!(RCC->APB1ENR & 0x00000010))
 		RCC->APB1ENR |= 0x00000010;
 
 	//--- Config ----//

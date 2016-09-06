@@ -1,4 +1,32 @@
-#include "GTK_Header.h"
+//#include "GTK_Header.h"
+
+#include <stm32f10x.h>
+//#include <stm32f10x_gpio.h>
+//#include <stm32f10x_rcc.h>
+//#include <stm32f10x_tim.h>
+//#include <stm32f10x_adc.h>
+//#include <stm32f10x_flash.h>
+//#include <stm32f10x_usart.h>
+
+//#include <stm32f10x_exti.h>
+#include <misc.h>
+#include <math.h>
+
+//#include "string.h"
+//#include "stdio.h"
+#include "GTK_Hard.h"
+#include "timer.h"
+#include "uart.h"
+
+#include "float.h"
+
+#include "pwm.h"
+#include "adc.h"
+#include "GTK_Estructura.h"
+#include "GTK_Signal.h"
+#include "flash_program.h"
+#include "GTK_Errors.h"
+
 
 //--- New code ---//
 #define resistance_discharge 1175
@@ -280,11 +308,14 @@ void TIM5_Init (void)
 	if (!RCC_TIM5_CLK)
 		RCC_TIM5_CLKEN;
 
+	TIM5->CR1 = 0x0000;
+
 	//Configuracion del timer.
 	TIM5->ARR = 100; //100uS.
 	TIM5->CNT = 0;
-	TIM5->PSC = 71;
-	TIM5->EGR = TIM_EGR_UG;
+	//TIM5->PSC = 71;
+	TIM5->PSC = 143;		//error en frecuencia para TIM5 me da x2
+	//TIM5->EGR = TIM_EGR_UG;
 
 	// Enable timer ver UDIS
 	TIM5->DIER |= TIM_DIER_UIE;

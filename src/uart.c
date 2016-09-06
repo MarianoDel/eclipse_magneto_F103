@@ -477,7 +477,8 @@ void UART1_Config(void){
 
 	pBuffUART1txW = &buffUART1tx[0];
 
-	USART1->BRR = 0x0EA6; //baud: 9600.
+	USART1->BRR = 0x1D4C;	//baud: 9600. PCLK1 @ 72MHz
+	//USART1->BRR = 0x0EA6; //baud: 9600. PCLK1 @ 36MHz
 	USART1->CR1 = 0x202C; //8N1
 }
 

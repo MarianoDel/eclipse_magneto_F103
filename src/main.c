@@ -1,4 +1,26 @@
-#include "GTK_Header.h"
+//#include "GTK_Header.h"
+
+#include <stm32f10x.h>
+#include <stm32f10x_gpio.h>
+#include <stm32f10x_rcc.h>
+#include <stm32f10x_tim.h>
+#include <stm32f10x_adc.h>
+#include <stm32f10x_flash.h>
+#include <stm32f10x_usart.h>
+//#include <stm32f10x_exti.h>
+#include <misc.h>
+
+
+#include "GTK_Hard.h"
+#include "timer.h"
+#include "uart.h"
+#include "pwm.h"
+#include "adc.h"
+#include "GTK_Estructura.h"
+#include "GTK_Signal.h"
+#include "flash_program.h"
+#include "GTK_Errors.h"
+
 
 char buffSendErr[64];
 
@@ -83,13 +105,13 @@ int main (void)
 	//Configuracion led. & Enabled Channels
 	Led_Config();
 
-	//Timer 1ms.
+	//Timer 1ms -- Wait_ms()
 	TIM7_Init();
 
 	//Timer 100ms.
 	TIM6_Init();
 
-	//Signal timer.
+	//Signal timer -- 100us
 	TIM5_Init();
 
 	//ADC1.
@@ -115,17 +137,16 @@ int main (void)
 	Channel_4_Init();
 
 	//pruebo TIM5 100us step
-	for (i = 0; i < 250; i++)
+	for (i = 0; i < 20; i++)
 	{
 		if (LED1)
 			LED1_OFF;
 		else
 			LED1_ON;
 
-//		while (!session_warning_up_channel_1_stage_time);
-//
-//		session_warning_up_channel_1_stage_time = 100;	//10ms
-		Wait_ms(100);
+		while (session_warning_up_channel_1_stage_time != 0);
+		session_warning_up_channel_1_stage_time = 1000;	//100ms
+//		Wait_ms(100);
 	}
 
 

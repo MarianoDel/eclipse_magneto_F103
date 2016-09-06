@@ -63,8 +63,8 @@ void  ADC1_Init(void)
 	temp |= 0x00000000;
 	GPIOC->CRL = temp;
 
-	//clock for ADC (max 14MHz --> 12/4=3MHz)
-	RCC_ADCCLKConfig (RCC_PCLK2_Div2);
+	//clock for ADC (max 14MHz --> 72/6 = 12MHz)
+	RCC_ADCCLKConfig (RCC_PCLK2_Div6);
 
 	//define ADC config
 	ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
