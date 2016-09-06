@@ -1,4 +1,3 @@
-//#include "GTK_Header.h"
 
 #include "timer.h"
 #include "stm32f10x.h"

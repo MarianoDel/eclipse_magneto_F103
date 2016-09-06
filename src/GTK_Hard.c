@@ -1,4 +1,10 @@
-#include "GTK_Header.h"
+#include <stm32f10x.h>
+#include <stm32f10x_gpio.h>
+#include <stm32f10x_rcc.h>
+
+#include "GTK_Hard.h"
+#include "timer.h"
+
 
 //************************************************************************************//
 void RCC_Config (void){

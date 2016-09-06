@@ -28,27 +28,6 @@
 #include "GTK_Errors.h"
 
 
-//Funciones de PWM.
-#define PWM1_Init() PWM_TIM1_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2))
-#define PWM2_Init() PWM_TIM2_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2))
-#define PWM3_Init() PWM_TIM3_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2 | PWM_CHANNEL_3 | PWM_CHANNEL_4))
-#define PWM4_Init() PWM_TIM4_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2 | PWM_CHANNEL_3 | PWM_CHANNEL_4))
-
-#define PWM_CH1_TiempoSubida(d) 			PWM_TIM2_DUTY (d, PWM_CHANNEL_1)
-#define PWM_CH1_TiempoMantenimiento(d) 		PWM_TIM2_DUTY (d, PWM_CHANNEL_2)
-#define PWM_CH1_TiempoBajada(d) 			PWM_TIM1_DUTY (d, PWM_CHANNEL_1)
-
-#define PWM_CH2_TiempoSubida(d) 			PWM_TIM1_DUTY (d, PWM_CHANNEL_2)
-#define PWM_CH2_TiempoMantenimiento(d) 		PWM_TIM3_DUTY (d, PWM_CHANNEL_1)
-#define PWM_CH2_TiempoBajada(d) 			PWM_TIM3_DUTY (d, PWM_CHANNEL_2)
-
-#define PWM_CH3_TiempoSubida(d) 			PWM_TIM3_DUTY (d, PWM_CHANNEL_3)
-#define PWM_CH3_TiempoMantenimiento(d) 		PWM_TIM3_DUTY (d, PWM_CHANNEL_4)
-#define PWM_CH3_TiempoBajada(d) 			PWM_TIM4_DUTY (d, PWM_CHANNEL_1)
-
-#define PWM_CH4_TiempoSubida(d) 			PWM_TIM4_DUTY (d, PWM_CHANNEL_2)
-#define PWM_CH4_TiempoMantenimiento(d) 		PWM_TIM4_DUTY (d, PWM_CHANNEL_3)
-#define PWM_CH4_TiempoBajada(d) 			PWM_TIM4_DUTY (d, PWM_CHANNEL_4)
 
 //Funciones UART.
 /*

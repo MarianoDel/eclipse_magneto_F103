@@ -1,4 +1,8 @@
-#include "GTK_Header.h"
+
+
+#include <stm32f10x.h>
+#include "GTK_Hard.h"
+#include "pwm.h"
 
 /*
 #define DUTY_DEF  (1000 - duty)
