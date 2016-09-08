@@ -11,15 +11,19 @@
 #include "GTK_Errors.h"
 
 
+//--- Externals para enviar errores en UART
 char buffSendErr[64];
 
 #define TIME_RUN_DEF 250
 unsigned short timeRun = TIME_RUN_DEF;
 
+//--- Externals para muestreos de corriente con el ADC
 volatile unsigned char flagMuestreo = 0;
-unsigned short adc0[4] = {0,0,0,0};
+volatile unsigned char take_current_samples = 0;
 
+//--- Externals para armar señales y comprobar el TIM5 en el inicio del programa
 volatile unsigned int session_warning_up_channel_1_stage_time = 0;
+
 //--- Señal 1Hz (Half) ---//
 /*
 #define FIELD_PERCENT 			100
@@ -184,7 +188,7 @@ int main (void)
 		}
 
 		//ADC control.
-		//Session_Current_Limit_control();
+		Session_Current_Limit_control();
 
 		//Channel 1.
 		Session_Channel_1 ();
@@ -202,7 +206,7 @@ int main (void)
 		Session_Channel_4 ();	//si comento esto se cuelga saltando simepre TIM1_1MS pero parece solo con el debugger puesto PROBR QUITNDO TODOS LOS BREAKS
 		UART_CH4_Receive();
 
-		//Rececion de la configuracion por PC.
+		//Recepcion de la configuracion por PC.
 		UART_PC_Receive();
 
 

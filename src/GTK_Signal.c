@@ -24,6 +24,7 @@
 
 #include "pwm.h"
 #include "adc.h"
+#include "stm32f10x_adc.h"
 #include "GTK_Estructura.h"
 #include "GTK_Signal.h"
 #include "flash_program.h"
@@ -213,6 +214,32 @@ unsigned short session_cooling_down_channel_4_burst_cnt = 0;
 
 
 unsigned char session_plateau_channel_4_state = 0;
+
+//--- Current limit Externals ---//
+extern volatile unsigned char flagMuestreo;
+extern volatile unsigned char take_current_samples;
+
+//--- Current limit Globals ---//
+enum CurrState {
+	CURRENT_INIT_CHECK = 0,
+	CURRENT_CH1,
+	CURRENT_CH1_WAIT_SAMPLE,
+	CURRENT_CH1_CHECK,
+	CURRENT_CH2,
+	CURRENT_CH2_WAIT_SAMPLE,
+	CURRENT_CH2_CHECK,
+	CURRENT_CH3,
+	CURRENT_CH3_WAIT_SAMPLE,
+	CURRENT_CH3_CHECK,
+	CURRENT_CH4,
+	CURRENT_CH4_WAIT_SAMPLE,
+	CURRENT_CH4_CHECK
+
+};
+enum CurrState current_limit_state = CURRENT_CH1;
+unsigned short actual_current [4] = { 0, 0, 0, 0};
+
+
 
 //--- Channel 1 ---//
 void TIM5_IRQHandler (void)	//100uS
@@ -830,24 +857,27 @@ unsigned char Session_Channels_Parameters_Calculate(unsigned char channel, unsig
 {
 
 	//Antenna parameters.
-	float resistance = 0;
-	float inductance = 0;
-	float current_limit = 0;
+	float resistance = 0.0;
+	float inductance = 0.0;
+	float current_limit = 0.0;
 
 	//Signal parameters.
-	float initial_current;
-	float final_current;
-	float current;
+	float initial_current = 0.0;
+	float final_current = 0.0;
+	float current = 0.0;
 
-	float auxiliar_duty;
-	float voltage;
-	float voltage2;
+	float auxiliar_duty = 0.0;
+	float voltage = 0.0;
+	float voltage2 = 0.0;
 
-	float LR_tau;
+	float LR_tau = 0.0;
 //	float Wp;
-	float Td;
-	float Vsnubber;
-	float falling_time;
+	float Td = 0.0;
+	float Vsnubber = 0.0;
+	float falling_time = 0.0;
+
+	//Peak Current
+	float peak_c = 0.0;
 
 	unsigned int time;
 	unsigned char i;
@@ -1008,6 +1038,13 @@ unsigned char Session_Channels_Parameters_Calculate(unsigned char channel, unsig
 	current_limit = (float)p_session->stage_1_current_limit_dec;
 	current_limit /= 100;
 	current_limit += (float)p_session->stage_1_current_limit_int;
+
+	//tengo 550mV / A
+	//peak_c = (current_limit * 1.2) / 3.3;
+	peak_c = (current_limit * 1.2) * 0.303;
+	peak_c = peak_c * 4095;
+
+	p_session->peak_current_limit = (unsigned short) peak_c;
 
 	//TODO: OJO ESTOS DOS VER QUE PASA EN MAINTENANCE
 
@@ -1492,7 +1529,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 	warningup_coolingdown_typedef * p_table;
 	float * p_pwm_slope;
 	float * p_pwm_ch;
-	unsigned int * p_stage_time;
+	volatile unsigned int * p_stage_time;
 	unsigned short * p_session_time;
 	unsigned short * p_session_time_2;
 	unsigned char * p_fall_type;
@@ -2498,7 +2535,8 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 
 					if (*p_session_time >= (p_table + (*p_session_channel_step))->low_step_number)
 					{
-						*p_session_burst_cnt++;
+						//*p_session_burst_cnt++;
+						*p_session_burst_cnt = *p_session_burst_cnt + 1;
 
 						if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 							*p_session_burst_cnt = 0;
@@ -2544,7 +2582,9 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			{
 				if (*p_session_time >= (p_table + (*p_session_channel_step))->low_step_number)
 				{
-					*p_session_burst_cnt++;
+					//*p_session_burst_cnt++;
+
+					*p_session_burst_cnt = *p_session_burst_cnt + 1;
 
 					if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 						*p_session_burst_cnt = 0;
@@ -3386,7 +3426,8 @@ unsigned char Session_Plateau_Channels(unsigned char channel)
 					if (*p_session_time >= p_table->low_step_number)
 					{
 						//End of cycle.
-						*p_session_burst_cnt++;
+						//*p_session_burst_cnt++;
+						*p_session_burst_cnt = *p_session_burst_cnt + 1;
 						if (*p_session_burst_cnt == (p_table->burst_mode_on + p_table->burst_mode_off))
 							*p_session_burst_cnt = 0;
 
@@ -3424,7 +3465,8 @@ unsigned char Session_Plateau_Channels(unsigned char channel)
 							if (ch1_sync_state & SYNC_IN_DOWN)
 							{
 								//End of cycle.
-								*p_session_burst_cnt++;
+								//*p_session_burst_cnt++;
+								*p_session_burst_cnt = *p_session_burst_cnt + 1;
 								if (*p_session_burst_cnt == (p_table->burst_mode_on + p_table->burst_mode_off))
 									*p_session_burst_cnt = 0;
 
@@ -3460,7 +3502,8 @@ unsigned char Session_Plateau_Channels(unsigned char channel)
 							if (ch1_sync_state & SYNC_IN_RISING)
 							{
 								//End of cycle.
-								*p_session_burst_cnt++;
+								//*p_session_burst_cnt++;
+								*p_session_burst_cnt = *p_session_burst_cnt + 1;
 								if (*p_session_burst_cnt == (p_table->burst_mode_on + p_table->burst_mode_off))
 									*p_session_burst_cnt = 0;
 
@@ -3495,7 +3538,8 @@ unsigned char Session_Plateau_Channels(unsigned char channel)
 							if (ch1_sync_state & SYNC_IN_DOWN)
 							{
 								//End of cycle.
-								*p_session_burst_cnt++;
+								//*p_session_burst_cnt++;
+								*p_session_burst_cnt = *p_session_burst_cnt + 1;
 								if (*p_session_burst_cnt == (p_table->burst_mode_on + p_table->burst_mode_off))
 									*p_session_burst_cnt = 0;
 
@@ -3529,7 +3573,8 @@ unsigned char Session_Plateau_Channels(unsigned char channel)
 				if (*p_session_time >= p_table->low_step_number)
 				{
 					//End of cycle.
-					*p_session_burst_cnt++;
+					//*p_session_burst_cnt++;
+					*p_session_burst_cnt = *p_session_burst_cnt + 1;
 					if (*p_session_burst_cnt == (p_table->burst_mode_on + p_table->burst_mode_off))
 						*p_session_burst_cnt = 0;
 
@@ -4728,7 +4773,8 @@ unsigned char Session_Cooling_Down_Channels (unsigned char channel)
 
 					if (*p_session_time >= (p_table + (*p_session_channel_step))->low_step_number)
 					{
-						*p_session_burst_cnt++;
+						//*p_session_burst_cnt++;
+						*p_session_burst_cnt = *p_session_burst_cnt + 1;
 
 						if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 							*p_session_burst_cnt = 0;
@@ -4775,7 +4821,8 @@ unsigned char Session_Cooling_Down_Channels (unsigned char channel)
 			{
 				if (*p_session_time >= (p_table + (*p_session_channel_step))->low_step_number)
 				{
-					*p_session_burst_cnt++;
+					//*p_session_burst_cnt++;
+					*p_session_burst_cnt = *p_session_burst_cnt + 1;
 
 					if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 						*p_session_burst_cnt = 0;
@@ -5857,143 +5904,172 @@ void Session_Channel_4 (void)
 
 
 
-//--- Current limit ---//
-extern volatile unsigned char flagMuestreo;
-extern unsigned short adc0[4];
-//#define LSB_Per_Ampere 133.85
-#define LSB_Per_Ampere 283.0
-unsigned short adc1[4] = {1,1,1,1};
-#define TIME_CURRENT_SAMPLE_DEF 10
-unsigned char time_current_sample = TIME_CURRENT_SAMPLE_DEF;
-
+//si el canal se encuentra activo
+//reviso si la corriente del canal supera la maxima seteada
 void Session_Current_Limit_control (void)
 {
-	unsigned char i;
 
-	if (flagMuestreo == 1)
+	switch (current_limit_state)
 	{
-		float current_limit;
-		unsigned short aux2;
-
-		i = ADC1_Scan ((ADC_CHANNEL1 | ADC_CHANNEL2 | ADC_CHANNEL3 | ADC_CHANNEL4), &adc0[0]);
-
-		if (i == FIN_OK)
-		{
-			flagMuestreo = 0;
-
-			//--- If the current is maior than current limit. This function
-			//sends an error message to the display and It stops the channel ---//
-
-			if (time_current_sample == 0)
+		case CURRENT_INIT_CHECK:
+			if (take_current_samples)
 			{
-				//Channel_1.
-				if ((session_ch_1.status) && ((session_channel_1_state == SESSION_CHANNEL_1_WARNING_UP) || (session_channel_1_state == SESSION_CHANNEL_1_PLATEAU) || (session_channel_1_state == SESSION_CHANNEL_1_COOLING_DOWN)))
-				{
-					current_limit = (float)session_ch_1.stage_1_current_limit_dec;
-					current_limit /= 100;
-					current_limit += (float)session_ch_1.stage_1_current_limit_int;
+				take_current_samples = 0;
+				current_limit_state++;
+			}
+			break;
 
-					current_limit *= (float)1.5;
-					current_limit *= (float)LSB_Per_Ampere;	//133.85 lo cmbio a 283 -> 0.228V/A en pata del micro
-					aux2 = (unsigned short) current_limit;
-
-					if (adc1[0] > aux2)
-					{
-						Session_Channel_1_Stop();
-
-						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
-						UART_PC_Send(&buffSendErr[0]);
-					}
-				}
-
-				//Channel_2
-				if ((session_ch_2.status) && ((session_channel_2_state == SESSION_CHANNEL_2_WARNING_UP) || (session_channel_2_state == SESSION_CHANNEL_2_PLATEAU) || (session_channel_2_state == SESSION_CHANNEL_2_COOLING_DOWN)))
-				{
-					current_limit = (float)session_ch_2.stage_1_current_limit_dec;
-					current_limit /= 100;
-					current_limit += (float)session_ch_2.stage_1_current_limit_int;
-
-					current_limit *= (float)1.5;
-					current_limit *= (float)LSB_Per_Ampere;
-					aux2 = (unsigned short) current_limit;
-
-					if (adc1[1] > aux2)
-					{
-						Session_Channel_2_Stop();
-
-						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
-						sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", adc1[1]);
-						UART_PC_Send(&buffSendErr[0]);
-					}
-				}
-
-				//Channel_3
-				if ((session_ch_3.status) && ((session_channel_3_state == SESSION_CHANNEL_3_WARNING_UP) || (session_channel_3_state == SESSION_CHANNEL_3_PLATEAU) || (session_channel_3_state == SESSION_CHANNEL_3_COOLING_DOWN)))
-				{
-					current_limit = (float)session_ch_3.stage_1_current_limit_dec;
-					current_limit /= 100;
-					current_limit += (float)session_ch_3.stage_1_current_limit_int;
-
-					current_limit *= (float)1.5;
-					current_limit *= (float)LSB_Per_Ampere;
-					aux2 = (unsigned short) current_limit;
-
-					if (adc1[2] > aux2)
-					{
-						Session_Channel_3_Stop();
-
-						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
-						UART_PC_Send(&buffSendErr[0]);
-					}
-				}
-
-				//Channel_4
-				if ((session_ch_4.status) && ((session_channel_4_state == SESSION_CHANNEL_4_WARNING_UP) || (session_channel_4_state == SESSION_CHANNEL_4_PLATEAU) || (session_channel_4_state == SESSION_CHANNEL_4_COOLING_DOWN)))
-				{
-					current_limit = (float)session_ch_4.stage_1_current_limit_dec;
-					current_limit /= 100;
-					current_limit += (float)session_ch_4.stage_1_current_limit_int;
-
-					current_limit *= (float)1.5;
-					current_limit *= (float)LSB_Per_Ampere;
-					aux2 = (unsigned short) current_limit;
-
-					if (adc1[3] > aux2)
-					{
-						Session_Channel_4_Stop();
-
-						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
-						UART_PC_Send(&buffSendErr[0]);
-					}
-				}
-
-				time_current_sample = TIME_CURRENT_SAMPLE_DEF;
-				for (aux2 = 0; aux2<4; aux2++)
-					adc1[aux2] = 1;
+		case CURRENT_CH1:
+			if (session_ch_1.status)
+			{
+				flagMuestreo = 0;
+				ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_28Cycles5);
+				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+				current_limit_state = CURRENT_CH1_WAIT_SAMPLE;
 			}
 			else
+				current_limit_state = CURRENT_CH2;
+
+
+			break;
+
+		case CURRENT_CH1_WAIT_SAMPLE:
+			if (flagMuestreo)
 			{
-				for (aux2 = 0; aux2<4; aux2++)
-				{
-					if (adc0[aux2] > adc1[aux2])
-						adc1[aux2] = adc0[aux2];
-				}
+				actual_current[CH1] = ADC1->DR;
+				current_limit_state = CURRENT_CH1_CHECK;
 			}
+			break;
 
-		}
+		case CURRENT_CH1_CHECK:
+			if (session_ch_1.peak_current_limit > actual_current[CH1])
+			{
+				Session_Channel_1_Stop();
 
-		if (i == FIN_ERROR)
-		{
-			flagMuestreo = 0;
-		}
+				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
+				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH1]);
+				UART_PC_Send(&buffSendErr[0]);
+			}
+			else
+				current_limit_state++;
 
-		if (i == FIN_TIMEOUT)
-		{
-			flagMuestreo = 0;
-		}
+			break;
+
+		case CURRENT_CH2:
+			if (session_ch_2.status)
+			{
+				flagMuestreo = 0;
+				ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 1, ADC_SampleTime_28Cycles5);
+				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+				current_limit_state = CURRENT_CH2_WAIT_SAMPLE;
+			}
+			else
+				current_limit_state = CURRENT_CH3;
+
+
+			break;
+
+		case CURRENT_CH2_WAIT_SAMPLE:
+			if (flagMuestreo)
+			{
+				actual_current[CH2] = ADC1->DR;
+				current_limit_state = CURRENT_CH2_CHECK;
+			}
+			break;
+
+		case CURRENT_CH2_CHECK:
+			if (session_ch_2.peak_current_limit > actual_current[CH2])
+			{
+				Session_Channel_2_Stop();
+
+				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
+				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH2]);
+				UART_PC_Send(&buffSendErr[0]);
+			}
+			else
+				current_limit_state++;
+
+			break;
+
+		case CURRENT_CH3:
+			if (session_ch_3.status)
+			{
+				flagMuestreo = 0;
+				ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 1, ADC_SampleTime_28Cycles5);
+				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+				current_limit_state = CURRENT_CH3_WAIT_SAMPLE;
+			}
+			else
+				current_limit_state = CURRENT_CH4;
+
+
+			break;
+
+		case CURRENT_CH3_WAIT_SAMPLE:
+			if (flagMuestreo)
+			{
+				actual_current[CH2] = ADC1->DR;
+				current_limit_state = CURRENT_CH3_CHECK;
+			}
+			break;
+
+		case CURRENT_CH3_CHECK:
+			if (session_ch_3.peak_current_limit > actual_current[CH3])
+			{
+				Session_Channel_3_Stop();
+
+				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
+				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH3]);
+				UART_PC_Send(&buffSendErr[0]);
+			}
+			else
+				current_limit_state++;
+
+			break;
+
+		case CURRENT_CH4:
+			if (session_ch_4.status)
+			{
+				flagMuestreo = 0;
+				ADC_RegularChannelConfig(ADC1, ADC_Channel_7, 1, ADC_SampleTime_28Cycles5);
+				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+				current_limit_state = CURRENT_CH4_WAIT_SAMPLE;
+			}
+			else
+				current_limit_state = CURRENT_INIT_CHECK;
+
+
+			break;
+
+		case CURRENT_CH4_WAIT_SAMPLE:
+			if (flagMuestreo)
+			{
+				actual_current[CH2] = ADC1->DR;
+				current_limit_state = CURRENT_CH4_CHECK;
+			}
+			break;
+
+		case CURRENT_CH4_CHECK:
+			if (session_ch_4.peak_current_limit > actual_current[CH4])
+			{
+				Session_Channel_4_Stop();
+
+				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
+				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH4]);
+				UART_PC_Send(&buffSendErr[0]);
+			}
+			else
+				current_limit_state = CURRENT_INIT_CHECK;
+
+			break;
+
+		default:
+			current_limit_state = CURRENT_INIT_CHECK;
+			break;
 
 	}
 }
+
 
 void Signal_TIM1MS (void)
 {
@@ -6051,10 +6127,5 @@ void Signal_TIM1MS (void)
 	}
 }
 
-void TIM6_IRQ_SIGNAL (void)
-{
-	if (time_current_sample)
-		time_current_sample--;
-}
 //--- Fin de carga de señales ---//
 

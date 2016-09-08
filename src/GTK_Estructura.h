@@ -101,6 +101,7 @@ typedef struct
 	unsigned char status;
 	char connected_ant_name [17];
 	unsigned char sync_on;
+	unsigned short peak_current_limit;
 
 
 } session_typedef;

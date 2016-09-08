@@ -7,6 +7,8 @@
 #include "misc.h"
 
 extern unsigned short timeRun;
+extern volatile unsigned char take_current_samples;
+
 //Wait_ms
 volatile unsigned short timer_wait;
 extern volatile unsigned char flagMuestreo;
@@ -20,6 +22,7 @@ void TIM7_IRQHandler (void)	//1mS
 
 	//Led3Toggle();
 	flagMuestreo = 1;
+	take_current_samples = 1;
 
 	ADC_TIM7_ISR();
 	//GTK_SIGNAL_TIME_1MS ();
@@ -39,8 +42,6 @@ void TIM7_IRQHandler (void)	//1mS
 
 void TIM6_IRQHandler (void)	//100mS
 {
-
-	TIM6_IRQ_SIGNAL ();
 	UART_Tim6 ();
 
 	//bajar flag

@@ -89,7 +89,6 @@ unsigned char Session_Cooling_Down_Channel_4(void);
 unsigned char Session_Cooling_Down_Channel_4_Parameters_Calculate(void);
 void Session_Cooling_Down_Channel_4_Restart(void);
 
-void TIM6_IRQ_SIGNAL (void);
 
 void Session_Current_Limit_control (void);
 

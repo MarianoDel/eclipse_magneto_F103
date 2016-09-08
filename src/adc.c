@@ -7,14 +7,14 @@
 
 #define BUFF_ADC_DIMENSION 	8
 #define BUFF_ADC_DIVISION	3
-//#define BUFF_ADC_SAMPLE		ADC_SampleTime_71Cycles5
-#define BUFF_ADC_SAMPLE		ADC_SampleTime_28Cycles5
-//#define BUFF_ADC_SAMPLE		ADC_SampleTime_1Cycles5
 
 volatile unsigned short buffADC[BUFF_ADC_DIMENSION];
 volatile unsigned short * pbuffADC_Write;
 volatile unsigned short * pbuffADC_Read;
 unsigned char ADC1_MUESTREAR_TimeOut;
+
+//--- Current limit Externals ---//
+extern volatile unsigned char flagMuestreo;
 
 void ADC_TIM7_ISR(void)
 {
@@ -22,21 +22,22 @@ void ADC_TIM7_ISR(void)
 		ADC1_MUESTREAR_TimeOut--;
 }
 
-void ADC1_2_IRQHandler(void){
+void ADC1_2_IRQHandler (void)
+{
+	if (ADC_GetITStatus(ADC1, ADC_IT_EOC))
+	{
 
-	if (ADC_GetITStatus(ADC1, ADC_IT_EOC)){
-
-		*pbuffADC_Write = ADC1->DR;
-
-		if (pbuffADC_Write != &buffADC[BUFF_ADC_DIMENSION])
-		{
-			pbuffADC_Write++;
-			ADC_SoftwareStartConvCmd(ADC1, ENABLE);
-		}
+		flagMuestreo = 1;
+//		*pbuffADC_Write = ADC1->DR;
+//
+//		if (pbuffADC_Write != &buffADC[BUFF_ADC_DIMENSION])
+//		{
+//			pbuffADC_Write++;
+//			ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+//		}
 
 		ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
 	}
-
 }
 
 void  ADC1_Init(void)
@@ -136,27 +137,27 @@ unsigned char ADC1_Muestrear (unsigned char canal, unsigned short * valorMedido)
 			switch(canal)
 			{
 				case ADC_CHANNEL1:
-					ADC_RegularChannelConfig(ADC1,ADC_Channel_4, 1, BUFF_ADC_SAMPLE);
+					ADC_RegularChannelConfig(ADC1,ADC_Channel_4, 1, ADC_SampleTime_28Cycles5);
 					break;
 
 				case ADC_CHANNEL2:
-					ADC_RegularChannelConfig(ADC1,ADC_Channel_5, 1,BUFF_ADC_SAMPLE);
+					ADC_RegularChannelConfig(ADC1,ADC_Channel_5, 1,ADC_SampleTime_28Cycles5);
 					break;
 
 				case ADC_CHANNEL3:
-					ADC_RegularChannelConfig(ADC1,ADC_Channel_6, 1,BUFF_ADC_SAMPLE);
+					ADC_RegularChannelConfig(ADC1,ADC_Channel_6, 1,ADC_SampleTime_28Cycles5);
 					break;
 
 				case ADC_CHANNEL4:
-					ADC_RegularChannelConfig(ADC1,ADC_Channel_7, 1,BUFF_ADC_SAMPLE);
+					ADC_RegularChannelConfig(ADC1,ADC_Channel_7, 1,ADC_SampleTime_28Cycles5);
 					break;
 
 				case ADC_CHANNEL5:
-					ADC_RegularChannelConfig(ADC1,ADC_Channel_14, 1,BUFF_ADC_SAMPLE);
+					ADC_RegularChannelConfig(ADC1,ADC_Channel_14, 1,ADC_SampleTime_28Cycles5);
 					break;
 
 				case ADC_CHANNEL6:
-					ADC_RegularChannelConfig(ADC1,ADC_Channel_15, 1,BUFF_ADC_SAMPLE);
+					ADC_RegularChannelConfig(ADC1,ADC_Channel_15, 1,ADC_SampleTime_28Cycles5);
 					break;
 			}
 
@@ -232,7 +233,7 @@ unsigned char ADC1_Scan (unsigned char canales, unsigned short * valorMedido)
 
 			if (canales & ADC_CHANNEL1)
 			{
-				ADC_RegularChannelConfig(ADC1,ADC_Channel_4, 1,BUFF_ADC_SAMPLE);
+				ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_28Cycles5);
 				pbuffADC_Write = &buffADC[0];
 				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 				ADC1_SCAN_State = ADC1_SCAN_TOMAR_MUESTRA_1;
@@ -259,7 +260,7 @@ unsigned char ADC1_Scan (unsigned char canales, unsigned short * valorMedido)
 
 			if (canales & ADC_CHANNEL2)
 			{
-				ADC_RegularChannelConfig(ADC1,ADC_Channel_5, 1,BUFF_ADC_SAMPLE);
+				ADC_RegularChannelConfig(ADC1,ADC_Channel_5, 1,ADC_SampleTime_28Cycles5);
 				pbuffADC_Write = &buffADC[0];
 				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 				ADC1_SCAN_State = ADC1_SCAN_TOMAR_MUESTRA_2;
@@ -286,7 +287,7 @@ unsigned char ADC1_Scan (unsigned char canales, unsigned short * valorMedido)
 
 			if (canales & ADC_CHANNEL3)
 			{
-				ADC_RegularChannelConfig(ADC1,ADC_Channel_6, 1,BUFF_ADC_SAMPLE);
+				ADC_RegularChannelConfig(ADC1,ADC_Channel_6, 1,ADC_SampleTime_28Cycles5);
 				pbuffADC_Write = &buffADC[0];
 				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 				ADC1_SCAN_State = ADC1_SCAN_TOMAR_MUESTRA_3;
@@ -313,7 +314,7 @@ unsigned char ADC1_Scan (unsigned char canales, unsigned short * valorMedido)
 
 			if (canales & ADC_CHANNEL4)
 			{
-				ADC_RegularChannelConfig(ADC1,ADC_Channel_7, 1,BUFF_ADC_SAMPLE);
+				ADC_RegularChannelConfig(ADC1,ADC_Channel_7, 1,ADC_SampleTime_28Cycles5);
 				pbuffADC_Write = &buffADC[0];
 				ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 				ADC1_SCAN_State = ADC1_SCAN_TOMAR_MUESTRA_4;
