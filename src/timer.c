@@ -6,7 +6,7 @@
 #include "uart.h"
 #include "misc.h"
 
-extern unsigned short timeRun;
+extern volatile unsigned short timeRun;
 extern volatile unsigned char take_current_samples;
 
 //Wait_ms

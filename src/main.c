@@ -14,8 +14,9 @@
 //--- Externals para enviar errores en UART
 char buffSendErr[64];
 
+//--- Externals para enviar keepalive por UART
 #define TIME_RUN_DEF 250
-unsigned short timeRun = TIME_RUN_DEF;
+volatile unsigned short timeRun = TIME_RUN_DEF;
 
 //--- Externals para muestreos de corriente con el ADC
 volatile unsigned char flagMuestreo = 0;
@@ -23,38 +24,6 @@ volatile unsigned char take_current_samples = 0;
 
 //--- Externals para armar señales y comprobar el TIM5 en el inicio del programa
 volatile unsigned int session_warning_up_channel_1_stage_time = 0;
-
-//--- Señal 1Hz (Half) ---//
-/*
-#define FIELD_PERCENT 			100
-#define RISING_TIME				100//ms
-#define MAINTENANCE_TIME		300	//ms
-#define FALLING_TIME			100//ms
-#define LOW_TIME				500//ms
-*/
-
-//--- Señal 1Hz (Full) ---//
-#define FIELD_PERCENT 			70
-#define RISING_TIME				100//ms
-#define MAINTENANCE_TIME		300	//ms
-#define FALLING_TIME			100//ms
-#define LOW_TIME				100//ms
-#define ANTENNA_RESISTANCE		12 //Ohm
-#define ANTENNA_INDUCTANCE		88 //mHy
-
-//--- Señal canal 4 ---//
-unsigned char GTK_SIGNAL_CH4_field_percent = 70;
-unsigned short GTK_SIGNAL_CH4_rising_time = 100;//ms
-unsigned short GTK_SIGNAL_CH4_maintenance_time = 300;//ms
-unsigned short GTK_SIGNAL_CH4_falling_time = 100;//ms
-unsigned short GTK_SIGNAL_CH4_low_time = 100;//ms
-unsigned char GTK_SIGNAL_CH4_antenna_resistance = 12; //Ohm
-unsigned char GTK_SIGNAL_CH4_antenna_inductance = 88; //mHy
-unsigned char GTK_SIGNAL_CH4_current_max_integer = 1;
-unsigned char GTK_SIGNAL_CH4_current_max_decimal = 88;
-
-#define CURRENT_MAX_INTEGER	1
-#define CURRENT_MAX_DECIMAL	88
 
 
 //Estructuras.
@@ -188,7 +157,7 @@ int main (void)
 		}
 
 		//ADC control.
-		Session_Current_Limit_control();
+//		Session_Current_Limit_control();
 
 		//Channel 1.
 		Session_Channel_1 ();
@@ -209,64 +178,7 @@ int main (void)
 		//Recepcion de la configuracion por PC.
 		UART_PC_Receive();
 
-
 	}
-/*
-	while (TRUE)
-	{
-
-		//--- Channel 4 ---//
-		GTK_Signal_Channel_4(GTK_SIGNAL_CH4_field_percent, GTK_SIGNAL_CH4_rising_time, GTK_SIGNAL_CH4_maintenance_time, GTK_SIGNAL_CH4_falling_time, GTK_SIGNAL_CH4_low_time, GTK_SIGNAL_CH4_current_max_integer, GTK_SIGNAL_CH4_current_max_decimal, GTK_SIGNAL_CH4_antenna_resistance, GTK_SIGNAL_CH4_antenna_inductance, ENABLE);
-
-		//Rececion de la configuracion por PC.
-		UART_PC_Receive();
-	}
-*/
-/*
-	while (TRUE)
-	{
-
-		signal();
-
-
-		//PWM_CH4_TiempoBajada(1000);
-
-		if (flagMuestreo == 1)
-		{
-			i = ADC1_Scan ((ADC_CHANNEL1 | ADC_CHANNEL2 | ADC_CHANNEL3 | ADC_CHANNEL4), &adc0[0]);
-
-			if (i == FIN_OK)
-			{
-				flagMuestreo = 0;
-			}
-
-			if (i == FIN_ERROR)
-			{
-				flagMuestreo = 0;
-			}
-
-			if (i == FIN_TIMEOUT)
-			{
-				flagMuestreo = 0;
-			}
-		}
-
-		//Recepcion desde antena 1.
-		UART_CH1_Receive();
-
-		//Recepcion desde antena 2.
-		UART_CH2_Receive();
-
-		//Recepcion desde antena 3.
-		UART_CH3_Receive();
-
-		//Recepcion desde antena 4.
-		UART_CH4_Receive();
-
-		//Recepcion desde la PC.
-		UART_PC_Receive();
-	}
-	*/
 }
 
 void SystemInit (void)

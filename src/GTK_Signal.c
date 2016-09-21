@@ -482,6 +482,18 @@ unsigned char Session_Channel_1_Verify_Antenna (session_typedef * ptr_session)
 		case SESSION_CHANNEL_1_VERIFY_ANTENNA_INIT:
 
 			Session_Clear_Antenna (ptr_session, SESSION_STAGE_1);
+//			//Resistance.
+//			ptr_session->stage_1_resistance_int = 0;
+//			ptr_session->stage_1_resistance_dec = 0;
+//
+//			//Inductance.
+//			ptr_session->stage_1_inductance_int = 0;
+//			ptr_session->stage_1_inductance_dec = 0;
+//
+//			//Current limit.
+//			ptr_session->stage_1_current_limit_int = 0;
+//			ptr_session->stage_1_current_limit_dec = 0;
+
 
 			UART_PC_Send("Getting antenna parameters of channel 1\r\n");
 			UART_CH1_Send("get_params\r\n");
@@ -1039,10 +1051,10 @@ unsigned char Session_Channels_Parameters_Calculate(unsigned char channel, unsig
 	current_limit /= 100;
 	current_limit += (float)p_session->stage_1_current_limit_int;
 
-	//tengo 550mV / A
-	//peak_c = (current_limit * 1.2) / 3.3;
-	peak_c = (current_limit * 1.2) * 0.303;
-	peak_c = peak_c * 4095;
+	//tengo 285mV / A + offset 640mV
+	peak_c = (current_limit * 1.4) * 0.285 + 0.64;		//convierto corriente max a tensión con 40% de margen
+	peak_c = peak_c * 0.303;	//divido 3.3V
+	peak_c = peak_c * 4095;		//valor pico permitido en ADC
 
 	p_session->peak_current_limit = (unsigned short) peak_c;
 
@@ -5947,11 +5959,12 @@ void Session_Current_Limit_control (void)
 				Session_Channel_1_Stop();
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
+				UART_PC_Send(&buffSendErr[0]);
 				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH1]);
 				UART_PC_Send(&buffSendErr[0]);
 			}
-			else
-				current_limit_state++;
+
+			current_limit_state++;
 
 			break;
 
@@ -5983,11 +5996,12 @@ void Session_Current_Limit_control (void)
 				Session_Channel_2_Stop();
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
+				UART_PC_Send(&buffSendErr[0]);
 				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH2]);
 				UART_PC_Send(&buffSendErr[0]);
 			}
-			else
-				current_limit_state++;
+
+			current_limit_state++;
 
 			break;
 
@@ -6008,7 +6022,7 @@ void Session_Current_Limit_control (void)
 		case CURRENT_CH3_WAIT_SAMPLE:
 			if (flagMuestreo)
 			{
-				actual_current[CH2] = ADC1->DR;
+				actual_current[CH3] = ADC1->DR;
 				current_limit_state = CURRENT_CH3_CHECK;
 			}
 			break;
@@ -6019,11 +6033,12 @@ void Session_Current_Limit_control (void)
 				Session_Channel_3_Stop();
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
+				UART_PC_Send(&buffSendErr[0]);
 				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH3]);
 				UART_PC_Send(&buffSendErr[0]);
 			}
-			else
-				current_limit_state++;
+
+			current_limit_state++;
 
 			break;
 
@@ -6044,7 +6059,7 @@ void Session_Current_Limit_control (void)
 		case CURRENT_CH4_WAIT_SAMPLE:
 			if (flagMuestreo)
 			{
-				actual_current[CH2] = ADC1->DR;
+				actual_current[CH4] = ADC1->DR;
 				current_limit_state = CURRENT_CH4_CHECK;
 			}
 			break;
@@ -6055,11 +6070,12 @@ void Session_Current_Limit_control (void)
 				Session_Channel_4_Stop();
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
+				UART_PC_Send(&buffSendErr[0]);
 				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH4]);
 				UART_PC_Send(&buffSendErr[0]);
 			}
-			else
-				current_limit_state = CURRENT_INIT_CHECK;
+
+			current_limit_state = CURRENT_INIT_CHECK;
 
 			break;
 
