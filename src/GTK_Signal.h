@@ -91,6 +91,10 @@ void Session_Cooling_Down_Channel_4_Restart(void);
 
 
 void Session_Current_Limit_control (void);
+void Current_Limit_CheckCh1 (void);
+void Current_Limit_CheckCh2 (void);
+void Current_Limit_CheckCh3 (void);
+void Current_Limit_CheckCh4 (void);
 
 //--- end ---//
 
@@ -108,6 +112,7 @@ enum falling_type
 #define COOLING_DOWN	3
 
 //canales
+#define CH0		0
 #define CH1		1
 #define CH2		2
 #define CH3		3

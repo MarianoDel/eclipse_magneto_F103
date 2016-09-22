@@ -2,7 +2,8 @@
 #define PWM_H_
 
 
-//Funciones de PWM.
+//Funciones de PWM -- PWM_TIM1_CONFIG
+//recibe prescaler, periodo, duty1, duty2, duty3, duty4, channel_en
 #define PWM1_Init() PWM_TIM1_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2))
 #define PWM2_Init() PWM_TIM2_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2))
 #define PWM3_Init() PWM_TIM3_CONFIG (10, 1000, 0, 0, 0, 0, (PWM_CHANNEL_1 | PWM_CHANNEL_2 | PWM_CHANNEL_3 | PWM_CHANNEL_4))

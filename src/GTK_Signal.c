@@ -237,7 +237,7 @@ enum CurrState {
 
 };
 enum CurrState current_limit_state = CURRENT_CH1;
-unsigned short actual_current [4] = { 0, 0, 0, 0};
+unsigned short actual_current [5] = { 0, 0, 0, 0, 0};	//CH0 es un dummy
 
 
 
@@ -627,7 +627,12 @@ void Session_Channel_1 (void)
 
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh1();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_1.status = 0;
 
@@ -659,6 +664,11 @@ void Session_Channel_1 (void)
 						PWM_CH1_TiempoSubida(0); //pwm 200V.
 						PWM_CH1_TiempoMantenimiento(0);
 						PWM_CH1_TiempoBajada(0);
+					}
+
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh1();
 					}
 
 					if (i == FIN_ERROR)
@@ -696,7 +706,12 @@ void Session_Channel_1 (void)
 						PWM_CH1_TiempoBajada(0);
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh1();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_1.status = 0;
 
@@ -1051,8 +1066,8 @@ unsigned char Session_Channels_Parameters_Calculate(unsigned char channel, unsig
 	current_limit /= 100;
 	current_limit += (float)p_session->stage_1_current_limit_int;
 
-	//tengo 285mV / A + offset 640mV
-	peak_c = (current_limit * 1.4) * 0.285 + 0.64;		//convierto corriente max a tensión con 40% de margen
+	//tengo 285mV / A + offset 640mV o 720mV en algunos casos
+	peak_c = (current_limit * 1.4) * 0.285 + 0.72;		//convierto corriente max a tensión con 40% de margen
 	peak_c = peak_c * 0.303;	//divido 3.3V
 	peak_c = peak_c * 4095;		//valor pico permitido en ADC
 
@@ -5056,7 +5071,12 @@ void Session_Channel_2 (void)
 
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh2();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_2.status = 0;
 
@@ -5088,6 +5108,11 @@ void Session_Channel_2 (void)
 						PWM_CH2_TiempoSubida(0); //pwm 200V.
 						PWM_CH2_TiempoMantenimiento(0);
 						PWM_CH2_TiempoBajada(0);
+					}
+
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh2();
 					}
 
 					if (i == FIN_ERROR)
@@ -5125,7 +5150,12 @@ void Session_Channel_2 (void)
 						PWM_CH2_TiempoBajada(0);
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh2();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_2.status = 0;
 
@@ -5394,7 +5424,12 @@ void Session_Channel_3 (void)
 
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh3();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_3.status = 0;
 
@@ -5426,6 +5461,11 @@ void Session_Channel_3 (void)
 						PWM_CH3_TiempoSubida(0); //pwm 200V.
 						PWM_CH3_TiempoMantenimiento(0);
 						PWM_CH3_TiempoBajada(0);
+					}
+
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh3();
 					}
 
 					if (i == FIN_ERROR)
@@ -5463,7 +5503,12 @@ void Session_Channel_3 (void)
 						PWM_CH3_TiempoBajada(0);
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh3();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_3.status = 0;
 
@@ -5737,7 +5782,12 @@ void Session_Channel_4 (void)
 
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh4();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_4.status = 0;
 
@@ -5779,6 +5829,11 @@ void Session_Channel_4 (void)
 						PWM_CH4_TiempoSubida(0); //pwm 200V.
 						PWM_CH4_TiempoMantenimiento(0);
 						PWM_CH4_TiempoBajada(0);
+					}
+
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh4();
 					}
 
 					if (i == FIN_ERROR)
@@ -5824,7 +5879,12 @@ void Session_Channel_4 (void)
 						PWM_CH4_TiempoBajada(0);
 					}
 
-					else if (i == FIN_ERROR)
+					if (i == TRABAJANDO)
+					{
+						Current_Limit_CheckCh4();
+					}
+
+					if (i == FIN_ERROR)
 					{
 						session_ch_4.status = 0;
 
@@ -5917,7 +5977,7 @@ void Session_Channel_4 (void)
 
 
 //si el canal se encuentra activo
-//reviso si la corriente del canal supera la maxima seteada
+//cargo en un vector las muestras corriente de cada canal
 void Session_Current_Limit_control (void)
 {
 
@@ -5954,16 +6014,17 @@ void Session_Current_Limit_control (void)
 			break;
 
 		case CURRENT_CH1_CHECK:
-			if (session_ch_1.peak_current_limit > actual_current[CH1])
-			{
-				Session_Channel_1_Stop();
+//			if (session_ch_1.peak_current_limit < actual_current[CH1])
+//			{
+//				Session_Channel_1_Stop();
+//
+//				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
+//				UART_PC_Send(&buffSendErr[0]);
+//				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH1]);
+//				UART_PC_Send(&buffSendErr[0]);
+//			}
 
-				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
-				UART_PC_Send(&buffSendErr[0]);
-				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH1]);
-				UART_PC_Send(&buffSendErr[0]);
-			}
-
+			//se chequea en cada canal
 			current_limit_state++;
 
 			break;
@@ -5991,16 +6052,17 @@ void Session_Current_Limit_control (void)
 			break;
 
 		case CURRENT_CH2_CHECK:
-			if (session_ch_2.peak_current_limit > actual_current[CH2])
-			{
-				Session_Channel_2_Stop();
+//			if (session_ch_2.peak_current_limit < actual_current[CH2])
+//			{
+//				Session_Channel_2_Stop();
+//
+//				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
+//				UART_PC_Send(&buffSendErr[0]);
+//				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH2]);
+//				UART_PC_Send(&buffSendErr[0]);
+//			}
 
-				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
-				UART_PC_Send(&buffSendErr[0]);
-				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH2]);
-				UART_PC_Send(&buffSendErr[0]);
-			}
-
+			//se chequea en cada canal
 			current_limit_state++;
 
 			break;
@@ -6028,16 +6090,17 @@ void Session_Current_Limit_control (void)
 			break;
 
 		case CURRENT_CH3_CHECK:
-			if (session_ch_3.peak_current_limit > actual_current[CH3])
-			{
-				Session_Channel_3_Stop();
+//			if (session_ch_3.peak_current_limit < actual_current[CH3])
+//			{
+//				Session_Channel_3_Stop();
+//
+//				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
+//				UART_PC_Send(&buffSendErr[0]);
+//				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH3]);
+//				UART_PC_Send(&buffSendErr[0]);
+//			}
 
-				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
-				UART_PC_Send(&buffSendErr[0]);
-				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH3]);
-				UART_PC_Send(&buffSendErr[0]);
-			}
-
+			//se chequea en cada canal
 			current_limit_state++;
 
 			break;
@@ -6065,16 +6128,17 @@ void Session_Current_Limit_control (void)
 			break;
 
 		case CURRENT_CH4_CHECK:
-			if (session_ch_4.peak_current_limit > actual_current[CH4])
-			{
-				Session_Channel_4_Stop();
+//			if (session_ch_4.peak_current_limit < actual_current[CH4])
+//			{
+//				Session_Channel_4_Stop();
+//
+//				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
+//				UART_PC_Send(&buffSendErr[0]);
+//				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH4]);
+//				UART_PC_Send(&buffSendErr[0]);
+//			}
 
-				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
-				UART_PC_Send(&buffSendErr[0]);
-				sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH4]);
-				UART_PC_Send(&buffSendErr[0]);
-			}
-
+			//se chequea en cada canal
 			current_limit_state = CURRENT_INIT_CHECK;
 
 			break;
@@ -6086,6 +6150,57 @@ void Session_Current_Limit_control (void)
 	}
 }
 
+void Current_Limit_CheckCh1 (void)
+{
+	if (session_ch_1.peak_current_limit < actual_current[CH1])
+	{
+		Session_Channel_1_Stop();
+
+		sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
+		UART_PC_Send(&buffSendErr[0]);
+		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH1]);
+		UART_PC_Send(&buffSendErr[0]);
+	}
+}
+
+void Current_Limit_CheckCh2 (void)
+{
+	if (session_ch_2.peak_current_limit < actual_current[CH2])
+	{
+		Session_Channel_2_Stop();
+
+		sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
+		UART_PC_Send(&buffSendErr[0]);
+		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH2]);
+		UART_PC_Send(&buffSendErr[0]);
+	}
+}
+
+void Current_Limit_CheckCh3 (void)
+{
+	if (session_ch_3.peak_current_limit < actual_current[CH3])
+	{
+		Session_Channel_3_Stop();
+
+		sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
+		UART_PC_Send(&buffSendErr[0]);
+		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH3]);
+		UART_PC_Send(&buffSendErr[0]);
+	}
+}
+
+void Current_Limit_CheckCh4 (void)
+{
+	if (session_ch_4.peak_current_limit < actual_current[CH4])
+	{
+		Session_Channel_4_Stop();
+
+		sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
+		UART_PC_Send(&buffSendErr[0]);
+		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH4]);
+		UART_PC_Send(&buffSendErr[0]);
+	}
+}
 
 void Signal_TIM1MS (void)
 {

@@ -157,7 +157,7 @@ int main (void)
 		}
 
 		//ADC control.
-//		Session_Current_Limit_control();
+		Session_Current_Limit_control();
 
 		//Channel 1.
 		Session_Channel_1 ();
@@ -172,7 +172,7 @@ int main (void)
 		UART_CH3_Receive();
 
 		//Channel 4.
-		Session_Channel_4 ();	//si comento esto se cuelga saltando simepre TIM1_1MS pero parece solo con el debugger puesto PROBR QUITNDO TODOS LOS BREAKS
+		Session_Channel_4 ();	//si comento esto se cuelga saltando siempre TIM1_1MS pero parece solo con el debugger puesto PROBR QUITNDO TODOS LOS BREAKS
 		UART_CH4_Receive();
 
 		//Recepcion de la configuracion por PC.
