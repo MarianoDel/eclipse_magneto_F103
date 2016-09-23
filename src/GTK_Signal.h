@@ -91,10 +91,10 @@ void Session_Cooling_Down_Channel_4_Restart(void);
 
 
 void Session_Current_Limit_control (void);
-void Current_Limit_CheckCh1 (void);
-void Current_Limit_CheckCh2 (void);
-void Current_Limit_CheckCh3 (void);
-void Current_Limit_CheckCh4 (void);
+unsigned char Current_Limit_CheckCh1 (void);
+unsigned char Current_Limit_CheckCh2 (void);
+unsigned char Current_Limit_CheckCh3 (void);
+unsigned char Current_Limit_CheckCh4 (void);
 
 //--- end ---//
 

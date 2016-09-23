@@ -122,6 +122,19 @@ enum session_cooling_down_channel_states {
 unsigned char session_cooling_down_channel_1_step = 0;
 unsigned short session_cooling_down_channel_1_burst_cnt = 0;
 
+unsigned char session_plateau_channel_1_state = 0;
+
+enum session_plateau_channel_states {
+
+	SESSION_PLATEAU_CHANNEL_INIT = 0,
+	SESSION_PLATEAU_CHANNEL_PARAMETERS_CALCULATE,
+	SESSION_PLATEAU_CHANNEL_RISING_EDGE,
+	SESSION_PLATEAU_CHANNEL_MAINTENANCE,
+	SESSION_PLATEAU_CHANNEL_FALLING_EDGE,
+	SESSION_PLATEAU_CHANNEL_LOW,
+	SESSION_PLATEAU_CHANNEL_END_ERROR
+};
+
 //--- Channel 2 ---//
 unsigned short session_channel_2_ask_temp = 0;
 unsigned short session_channel_2_answer_temp = 0;
@@ -456,6 +469,7 @@ enum states_channel_1 {
 
 void Session_Channel_1_Start(void)
 {
+	session_channel_1_state = SESSION_CHANNEL_1_INIT;
 	session_ch_1.status = 1;
 }
 void Session_Channel_1_Stop(void)
@@ -627,9 +641,13 @@ void Session_Channel_1 (void)
 
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_warning_up_channel_1_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh1();
+//						if (LED2)
+//							LED2_OFF;
+//						else
+//							LED2_ON;
 					}
 
 					if (i == FIN_ERROR)
@@ -666,7 +684,7 @@ void Session_Channel_1 (void)
 						PWM_CH1_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_plateau_channel_1_state > SESSION_PLATEAU_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh1();
 					}
@@ -706,7 +724,7 @@ void Session_Channel_1 (void)
 						PWM_CH1_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_cooling_down_channel_1_state > SESSION_COOLING_DOWN_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh1();
 					}
@@ -799,18 +817,6 @@ void Session_Channel_1 (void)
 	}
 }
 
-unsigned char session_plateau_channel_1_state = 0;
-
-enum session_plateau_channel_states {
-
-	SESSION_PLATEAU_CHANNEL_INIT = 0,
-	SESSION_PLATEAU_CHANNEL_PARAMETERS_CALCULATE,
-	SESSION_PLATEAU_CHANNEL_RISING_EDGE,
-	SESSION_PLATEAU_CHANNEL_MAINTENANCE,
-	SESSION_PLATEAU_CHANNEL_FALLING_EDGE,
-	SESSION_PLATEAU_CHANNEL_LOW,
-	SESSION_PLATEAU_CHANNEL_END_ERROR
-};
 
 unsigned char sync_in_waiting = 0;
 
@@ -4928,6 +4934,7 @@ enum states_channel_2 {
 
 void Session_Channel_2_Start(void)
 {
+	session_channel_2_state = SESSION_CHANNEL_2_INIT;
 	session_ch_2.status = 1;
 }
 void Session_Channel_2_Stop(void)
@@ -5071,7 +5078,7 @@ void Session_Channel_2 (void)
 
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_warning_up_channel_2_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh2();
 					}
@@ -5110,7 +5117,7 @@ void Session_Channel_2 (void)
 						PWM_CH2_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_plateau_channel_2_state > SESSION_PLATEAU_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh2();
 					}
@@ -5150,7 +5157,7 @@ void Session_Channel_2 (void)
 						PWM_CH2_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_cooling_down_channel_2_state > SESSION_COOLING_DOWN_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh2();
 					}
@@ -5280,6 +5287,7 @@ enum states_channel_3 {
 
 void Session_Channel_3_Start(void)
 {
+	session_channel_3_state = SESSION_CHANNEL_3_INIT;
 	session_ch_3.status = 1;
 }
 void Session_Channel_3_Stop(void)
@@ -5424,7 +5432,7 @@ void Session_Channel_3 (void)
 
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_warning_up_channel_3_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh3();
 					}
@@ -5463,7 +5471,7 @@ void Session_Channel_3 (void)
 						PWM_CH3_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_plateau_channel_3_state > SESSION_PLATEAU_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh3();
 					}
@@ -5503,7 +5511,7 @@ void Session_Channel_3 (void)
 						PWM_CH3_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_cooling_down_channel_3_state > SESSION_COOLING_DOWN_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh3();
 					}
@@ -5632,6 +5640,7 @@ enum states_channel_4 {
 
 void Session_Channel_4_Start(void)
 {
+	session_channel_4_state = SESSION_CHANNEL_4_INIT;
 	session_ch_4.status = 1;
 }
 void Session_Channel_4_Stop(void)
@@ -5782,7 +5791,7 @@ void Session_Channel_4 (void)
 
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_warning_up_channel_4_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh4();
 					}
@@ -5831,7 +5840,7 @@ void Session_Channel_4 (void)
 						PWM_CH4_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_plateau_channel_4_state > SESSION_PLATEAU_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh4();
 					}
@@ -5879,7 +5888,7 @@ void Session_Channel_4 (void)
 						PWM_CH4_TiempoBajada(0);
 					}
 
-					if (i == TRABAJANDO)
+					if ((i == TRABAJANDO) && (session_cooling_down_channel_4_state > SESSION_COOLING_DOWN_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh4();
 					}
@@ -6150,7 +6159,7 @@ void Session_Current_Limit_control (void)
 	}
 }
 
-void Current_Limit_CheckCh1 (void)
+unsigned char Current_Limit_CheckCh1 (void)
 {
 	if (session_ch_1.peak_current_limit < actual_current[CH1])
 	{
@@ -6160,10 +6169,12 @@ void Current_Limit_CheckCh1 (void)
 		UART_PC_Send(&buffSendErr[0]);
 		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH1]);
 		UART_PC_Send(&buffSendErr[0]);
+		return FIN_ERROR;
 	}
+	return TRABAJANDO;
 }
 
-void Current_Limit_CheckCh2 (void)
+unsigned char Current_Limit_CheckCh2 (void)
 {
 	if (session_ch_2.peak_current_limit < actual_current[CH2])
 	{
@@ -6173,10 +6184,12 @@ void Current_Limit_CheckCh2 (void)
 		UART_PC_Send(&buffSendErr[0]);
 		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH2]);
 		UART_PC_Send(&buffSendErr[0]);
+		return FIN_ERROR;
 	}
+	return TRABAJANDO;
 }
 
-void Current_Limit_CheckCh3 (void)
+unsigned char Current_Limit_CheckCh3 (void)
 {
 	if (session_ch_3.peak_current_limit < actual_current[CH3])
 	{
@@ -6186,10 +6199,12 @@ void Current_Limit_CheckCh3 (void)
 		UART_PC_Send(&buffSendErr[0]);
 		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH3]);
 		UART_PC_Send(&buffSendErr[0]);
+		return FIN_ERROR;
 	}
+	return TRABAJANDO;
 }
 
-void Current_Limit_CheckCh4 (void)
+unsigned char Current_Limit_CheckCh4 (void)
 {
 	if (session_ch_4.peak_current_limit < actual_current[CH4])
 	{
@@ -6199,7 +6214,9 @@ void Current_Limit_CheckCh4 (void)
 		UART_PC_Send(&buffSendErr[0]);
 		sprintf(&buffSendErr[0], (const char *) "current was: %d\r\n", actual_current[CH4]);
 		UART_PC_Send(&buffSendErr[0]);
+		return FIN_ERROR;
 	}
+	return TRABAJANDO;
 }
 
 void Signal_TIM1MS (void)
