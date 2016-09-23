@@ -590,6 +590,7 @@ void Session_Channel_1 (void)
 				Session_Cooling_Down_Channel_1_Restart();
 
 				ch1_sync_state = SYNC_RESET;
+				SetBitGlobalErrors (CH1, BIT_ERROR_CHECK);
 
 				session_channel_1_state = SESSION_CHANNEL_1_VERIFY_ANTENNA;
 				break;
@@ -1731,7 +1732,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 					((global_error_ch3 & BIT_ERROR_PARAMS_FINISH) || (global_error_ch3 & BIT_ERROR_CHECK_MASK)) &&
 					((global_error_ch4 & BIT_ERROR_PARAMS_FINISH) || (global_error_ch4 & BIT_ERROR_CHECK_MASK)))
 			{
-				//TODO: agregar bloqueo a canales
+
 				*p_session_burst_cnt = 0;
 
 				//--- Slope ---//
@@ -5060,6 +5061,8 @@ void Session_Channel_2 (void)
 				Session_Plateau_Channel_2_Restart();
 				Session_Cooling_Down_Channel_2_Restart();
 
+				SetBitGlobalErrors (CH2, BIT_ERROR_CHECK);
+
 				session_channel_2_state = SESSION_CHANNEL_2_VERIFY_ANTENNA;
 				break;
 
@@ -5416,6 +5419,7 @@ void Session_Channel_3 (void)
 				Session_Plateau_Channel_3_Restart();
 				Session_Cooling_Down_Channel_3_Restart();
 
+				SetBitGlobalErrors (CH3, BIT_ERROR_CHECK);
 				session_channel_3_state = SESSION_CHANNEL_3_VERIFY_ANTENNA;
 				break;
 
@@ -5769,6 +5773,8 @@ void Session_Channel_4 (void)
 				Session_Warning_Up_Channel_4_Restart();
 				Session_Plateau_Channel_4_Restart();
 				Session_Cooling_Down_Channel_4_Restart();
+
+				SetBitGlobalErrors (CH4, BIT_ERROR_CHECK);
 
 				session_channel_4_state = SESSION_CHANNEL_4_VERIFY_ANTENNA;
 				break;
@@ -6325,6 +6331,27 @@ void CheckforGlobalErrors (void)
 			//tengo error en todos los canales, aviso del error para parar display
 			UART_PC_Send((char *) (const char *) "STOP\r\n");
 			ResetCheckGlobalErrors ();
+			//por las dudas antes de la demora apago todos los PWM
+			PWM_CH1_TiempoSubida(0); //pwm 200V.
+			PWM_CH1_TiempoMantenimiento(0);
+			PWM_CH1_TiempoBajada(0);
+
+			PWM_CH2_TiempoSubida(0); //pwm 200V.
+			PWM_CH2_TiempoMantenimiento(0);
+			PWM_CH2_TiempoBajada(0);
+
+			PWM_CH3_TiempoSubida(0); //pwm 200V.
+			PWM_CH3_TiempoMantenimiento(0);
+			PWM_CH3_TiempoBajada(0);
+
+			PWM_CH4_TiempoSubida(0); //pwm 200V.
+			PWM_CH4_TiempoMantenimiento(0);
+			PWM_CH4_TiempoBajada(0);
+
+
+			Wait_ms(1000);
+			UART_PC_Send((char *) (const char *) "STOP\r\n");
+			UART_PC_Send((char *) (const char *) "STOP\r\n");
 		}
 	}
 }
