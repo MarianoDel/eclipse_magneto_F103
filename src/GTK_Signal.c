@@ -86,15 +86,15 @@ unsigned char session_warning_up_channel_1_state = 0;
 
 enum session_warning_up_channel_states {
 
-	SESSION_WARNING_UP_CHANNEL_INIT = 0,
-	SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE,
-	SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE_END,
-	SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL,
-	SESSION_WARNING_UP_CHANNEL_RISING_EDGE,
-	SESSION_WARNING_UP_CHANNEL_MAINTENANCE,
-	SESSION_WARNING_UP_CHANNEL_FALLING_EDGE,
-	SESSION_WARNING_UP_CHANNEL_LOW,
-	SESSION_WARNING_UP_CHANNEL_END_ERROR
+	SESSION_WARMING_UP_CHANNEL_INIT = 0,
+	SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE,
+	SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE_END,
+	SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL,
+	SESSION_WARMING_UP_CHANNEL_RISING_EDGE,
+	SESSION_WARMING_UP_CHANNEL_MAINTENANCE,
+	SESSION_WARMING_UP_CHANNEL_FALLING_EDGE,
+	SESSION_WARMING_UP_CHANNEL_LOW,
+	SESSION_WARMING_UP_CHANNEL_END_ERROR
 };
 
 unsigned char session_warning_up_channel_1_step = 0;
@@ -253,6 +253,10 @@ enum CurrState {
 enum CurrState current_limit_state = CURRENT_CH1;
 unsigned short actual_current [5] = { 0, 0, 0, 0, 0};	//CH0 es un dummy
 
+unsigned char global_error_ch1 = 0;
+unsigned char global_error_ch2 = 0;
+unsigned char global_error_ch3 = 0;
+unsigned char global_error_ch4 = 0;
 
 
 //--- Channel 1 ---//
@@ -603,6 +607,7 @@ void Session_Channel_1 (void)
 				{
 					session_ch_1.status = 0;
 
+					SetBitGlobalErrors (CH1, BIT_ERROR_ANTENNA);
 					sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_DISCONNECTED(1));
 					UART_PC_Send(&buffSendErr[0]);
 				}
@@ -628,7 +633,7 @@ void Session_Channel_1 (void)
 				if (channel_1_pause == 0)
 				{
 
-					//i = Session_Warning_Up_Channel_1();
+					//los errores pueden ser por calculo de parametros o falta de sync cuando se necesita
 					i = Session_Warming_Up_Channels(CH1);
 
 					if (i == FIN_OK)
@@ -642,7 +647,7 @@ void Session_Channel_1 (void)
 
 					}
 
-					if ((i == TRABAJANDO) && (session_warning_up_channel_1_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
+					if ((i == TRABAJANDO) && (session_warning_up_channel_1_state > SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh1();
 //						if (LED2)
@@ -654,6 +659,7 @@ void Session_Channel_1 (void)
 					if (i == FIN_ERROR)
 					{
 						session_ch_1.status = 0;
+						SetBitGlobalErrors (CH1, BIT_ERROR_WARMING_UP);
 
 						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_WARNING_UP(1));
 						UART_PC_Send(&buffSendErr[0]);
@@ -825,7 +831,7 @@ void Session_Warning_Up_Channel_1_Restart(void)
 {
 	ch1_sync_state = 0;
 	sync_in_waiting = 0;
-	session_warning_up_channel_1_state = SESSION_WARNING_UP_CHANNEL_INIT;
+	session_warning_up_channel_1_state = SESSION_WARMING_UP_CHANNEL_INIT;
 }
 
 void Session_Plateau_Channel_1_Restart(void)
@@ -844,7 +850,7 @@ void Session_Cooling_Down_Channel_1_Restart(void)
 
 void Session_Warning_Up_Channel_2_Restart(void)
 {
-	session_warning_up_channel_2_state = SESSION_WARNING_UP_CHANNEL_INIT;
+	session_warning_up_channel_2_state = SESSION_WARMING_UP_CHANNEL_INIT;
 }
 
 void Session_Plateau_Channel_2_Restart(void)
@@ -859,7 +865,7 @@ void Session_Cooling_Down_Channel_2_Restart(void)
 
 void Session_Warning_Up_Channel_3_Restart(void)
 {
-	session_warning_up_channel_3_state = SESSION_WARNING_UP_CHANNEL_INIT;
+	session_warning_up_channel_3_state = SESSION_WARMING_UP_CHANNEL_INIT;
 }
 
 void Session_Plateau_Channel_3_Restart(void)
@@ -874,7 +880,7 @@ void Session_Cooling_Down_Channel_3_Restart(void)
 
 void Session_Warning_Up_Channel_4_Restart(void)
 {
-	session_warning_up_channel_4_state = SESSION_WARNING_UP_CHANNEL_INIT;
+	session_warning_up_channel_4_state = SESSION_WARMING_UP_CHANNEL_INIT;
 }
 
 void Session_Plateau_Channel_4_Restart(void)
@@ -1634,7 +1640,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 
 	switch (*p_session_state)
 	{
-		case SESSION_WARNING_UP_CHANNEL_INIT:
+		case SESSION_WARMING_UP_CHANNEL_INIT:
 
 			*p_session_channel_step = 0;
 
@@ -1648,7 +1654,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 					if (channel == CH1)
 					{
 						ch1_sync_state |= SYNC_REQUIRED;
-						*p_session_state = SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE;
+						*p_session_state = SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE;
 					}
 					else
 					{
@@ -1658,7 +1664,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 							if (ch1_sync_state & SYNC_REQUIRED)
 							{
 								//CH1 presente
-								*p_session_state = SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE;
+								*p_session_state = SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE;
 								sync_in_waiting = 0;
 							}
 							else
@@ -1674,7 +1680,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 						else
 						{
 							//tengo timeout de CH1
-							*p_session_state = SESSION_WARNING_UP_CHANNEL_END_ERROR;
+							*p_session_state = SESSION_WARMING_UP_CHANNEL_END_ERROR;
 
 							sprintf(&buffSendErr[0],"ERROR in CH%d: not CH1 detected and sync is needed\r\n", channel);
 							UART_PC_Send(&buffSendErr[0]);
@@ -1688,122 +1694,130 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 					sprintf(&buffSendErr[0], "CH%d no sync needed\r\n", channel);
 					UART_PC_Send(&buffSendErr[0]);
 					ch1_sync_state &= NO_SYNC_REQUIRED_MASK;
-					*p_session_state = SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE;
+					*p_session_state = SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE;
 				}
 #else
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE;
 #endif
 			}
 			else
 				return FIN_OK;
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE:
+		case SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE:
 
 			i = Session_Channels_Parameters_Calculate(channel, WARMING_UP);	//retorna FIN_OK o FIN_ERROR rutina nueva 19-03-15
 
 			if (i == FIN_OK)
 			{
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE_END;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE_END;
+				SetBitGlobalErrors (channel, BIT_ERROR_PARAMS_FINISH);
 			}
 
 			else if (i == FIN_ERROR)
 			{
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_END_ERROR;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_END_ERROR;
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_WARNING_UP_PARAMETERS_CALCULATE(channel));
 				UART_PC_Send(&buffSendErr[0]);
 			}
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE_END:
+		case SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE_END:
 			//si todos los canales estan listos empiezo con las señales
-			//TODO: agregar bloqueo a canales
-			*p_session_burst_cnt = 0;
 
-			//--- Slope ---//
-			*p_pwm_slope = (p_table + (*p_session_channel_step))->rising_pwm_200_final + (p_table + (*p_session_channel_step))->rising_pwm_40_final - (p_table + (*p_session_channel_step))->rising_pwm_200_initial - (p_table + (*p_session_channel_step))->rising_pwm_40_initial;
-			*p_pwm_slope /= (float)10;
-			*p_pwm_slope /= p_session_ch->stage_1_rising_time;
-
-			//--- Next state ---//
-			*p_session_state = SESSION_WARNING_UP_CHANNEL_RISING_EDGE;
-
-			//--- Time of the next step ---//
-			*p_stage_time = p_session_ch->stage_1_time_per_step;
-
-			*p_session_time = 0;
-			*p_session_time_2 = 0;
-
-			//--- Next step ---//
-			*p_session_channel_step = 0;
-
-			//--- PWM initial values ---//
-			switch (channel)
+			if (((global_error_ch1 & BIT_ERROR_PARAMS_FINISH) || (global_error_ch1 & BIT_ERROR_CHECK_MASK)) &&
+					((global_error_ch2 & BIT_ERROR_PARAMS_FINISH) || (global_error_ch2 & BIT_ERROR_CHECK_MASK)) &&
+					((global_error_ch3 & BIT_ERROR_PARAMS_FINISH) || (global_error_ch3 & BIT_ERROR_CHECK_MASK)) &&
+					((global_error_ch4 & BIT_ERROR_PARAMS_FINISH) || (global_error_ch4 & BIT_ERROR_CHECK_MASK)))
 			{
-				case CH1:
-					if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
-					{
-						PWM_CH1_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
-						PWM_CH1_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
-						PWM_CH1_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
-					}
-					else
-					{
-						PWM_CH1_TiempoSubida(0); //pwm 200V.
-						PWM_CH1_TiempoMantenimiento(0);
-						PWM_CH1_TiempoBajada(0);
-					}
-					break;
+				//TODO: agregar bloqueo a canales
+				*p_session_burst_cnt = 0;
 
-				case CH2:
-					if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
-					{
-						PWM_CH2_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
-						PWM_CH2_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
-						PWM_CH2_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
-					}
-					else
-					{
-						PWM_CH2_TiempoSubida(0); //pwm 200V.
-						PWM_CH2_TiempoMantenimiento(0);
-						PWM_CH2_TiempoBajada(0);
-					}
-					break;
+				//--- Slope ---//
+				*p_pwm_slope = (p_table + (*p_session_channel_step))->rising_pwm_200_final + (p_table + (*p_session_channel_step))->rising_pwm_40_final - (p_table + (*p_session_channel_step))->rising_pwm_200_initial - (p_table + (*p_session_channel_step))->rising_pwm_40_initial;
+				*p_pwm_slope /= (float)10;
+				*p_pwm_slope /= p_session_ch->stage_1_rising_time;
 
-				case CH3:
-					if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
-					{
-						PWM_CH3_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
-						PWM_CH3_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
-						PWM_CH3_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
-					}
-					else
-					{
-						PWM_CH3_TiempoSubida(0); //pwm 200V.
-						PWM_CH3_TiempoMantenimiento(0);
-						PWM_CH3_TiempoBajada(0);
-					}
-					break;
+				//--- Next state ---//
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_RISING_EDGE;
 
-				case CH4:
-					if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
-					{
-						PWM_CH4_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
-						PWM_CH4_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
-						PWM_CH4_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
-					}
-					else
-					{
-						PWM_CH4_TiempoSubida(0); //pwm 200V.
-						PWM_CH4_TiempoMantenimiento(0);
-						PWM_CH4_TiempoBajada(0);
-					}
-					break;
+				//--- Time of the next step ---//
+				*p_stage_time = p_session_ch->stage_1_time_per_step;
+
+				*p_session_time = 0;
+				*p_session_time_2 = 0;
+
+				//--- Next step ---//
+				*p_session_channel_step = 0;
+
+				//--- PWM initial values ---//
+				switch (channel)
+				{
+					case CH1:
+						if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
+						{
+							PWM_CH1_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
+							PWM_CH1_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
+							PWM_CH1_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
+						}
+						else
+						{
+							PWM_CH1_TiempoSubida(0); //pwm 200V.
+							PWM_CH1_TiempoMantenimiento(0);
+							PWM_CH1_TiempoBajada(0);
+						}
+						break;
+
+					case CH2:
+						if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
+						{
+							PWM_CH2_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
+							PWM_CH2_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
+							PWM_CH2_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
+						}
+						else
+						{
+							PWM_CH2_TiempoSubida(0); //pwm 200V.
+							PWM_CH2_TiempoMantenimiento(0);
+							PWM_CH2_TiempoBajada(0);
+						}
+						break;
+
+					case CH3:
+						if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
+						{
+							PWM_CH3_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
+							PWM_CH3_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
+							PWM_CH3_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
+						}
+						else
+						{
+							PWM_CH3_TiempoSubida(0); //pwm 200V.
+							PWM_CH3_TiempoMantenimiento(0);
+							PWM_CH3_TiempoBajada(0);
+						}
+						break;
+
+					case CH4:
+						if (*p_session_burst_cnt < (p_table + (*p_session_channel_step))->burst_mode_on)
+						{
+							PWM_CH4_TiempoSubida((p_table + (*p_session_channel_step))->rising_pwm_200_initial); //pwm 200V.
+							PWM_CH4_TiempoMantenimiento((p_table + (*p_session_channel_step))->rising_pwm_40_initial);
+							PWM_CH4_TiempoBajada((p_table + (*p_session_channel_step))->rising_pwm_n_initial);
+						}
+						else
+						{
+							PWM_CH4_TiempoSubida(0); //pwm 200V.
+							PWM_CH4_TiempoMantenimiento(0);
+							PWM_CH4_TiempoBajada(0);
+						}
+						break;
+				}
 			}
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL:
+		case SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL:
 
 			if (*p_stage_time == 0)		//TODO: esto no tine mucho sentido, se agoto el tiempo de change level???
 			{							//o ser que el buffer tiene menos posiciones y pas muchas veces por aca
@@ -1813,7 +1827,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 					*p_stage_time = p_session_ch->stage_1_time_per_step;
 
 					//--- Next state ---//
-					*p_session_state = SESSION_WARNING_UP_CHANNEL_RISING_EDGE;
+					*p_session_state = SESSION_WARMING_UP_CHANNEL_RISING_EDGE;
 
 					//--- Next step ---//
 					*p_session_channel_step += 1;
@@ -1908,7 +1922,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			else
 			{
 				//--- Next state ---//
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_RISING_EDGE;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_RISING_EDGE;
 
 				*p_pwm_slope = (p_table + (*p_session_channel_step))->rising_pwm_200_final + (p_table + (*p_session_channel_step))->rising_pwm_40_final - (p_table + (*p_session_channel_step))->rising_pwm_200_initial - (p_table + (*p_session_channel_step))->rising_pwm_40_initial;
 				*p_pwm_slope /= (float)10;
@@ -1988,7 +2002,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_RISING_EDGE:
+		case SESSION_WARMING_UP_CHANNEL_RISING_EDGE:
 #ifdef WITH_SYNC
 			if ((channel == CH1) && (ch1_sync_state & SYNC_REQUIRED))  //modificacion no arranca sin CH1 5-9-16
 			{
@@ -2081,7 +2095,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			else
 			{
 				//--- Next state ---//
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_MAINTENANCE;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_MAINTENANCE;
 				*p_session_time = 0;
 				*p_session_time_2 = 0;
 
@@ -2156,7 +2170,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			}
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_MAINTENANCE:
+		case SESSION_WARMING_UP_CHANNEL_MAINTENANCE:
 #ifdef WITH_SYNC
 			if ((channel == CH1) && (ch1_sync_state & SYNC_REQUIRED))
 			{
@@ -2168,7 +2182,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			if (*p_session_time >= (p_table + (*p_session_channel_step))->maintenance_step_number)
 			{
 				//--- Next state ---//
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_FALLING_EDGE;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_FALLING_EDGE;
 
 				//--- Slope ---//
 				*p_pwm_slope = (p_table + (*p_session_channel_step))->falling_pwm_200_initial + (p_table + (*p_session_channel_step))->falling_pwm_40_initial - (p_table + (*p_session_channel_step))->falling_pwm_200_final - (p_table + (*p_session_channel_step))->falling_pwm_40_final;
@@ -2248,7 +2262,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			}
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_FALLING_EDGE:
+		case SESSION_WARMING_UP_CHANNEL_FALLING_EDGE:
 #ifdef WITH_SYNC
 			if ((channel == CH1) && (ch1_sync_state & SYNC_REQUIRED))
 			{
@@ -2295,7 +2309,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 						break;
 
 					case FALL_FAST:
-						*p_session_state = SESSION_WARNING_UP_CHANNEL_LOW;
+						*p_session_state = SESSION_WARMING_UP_CHANNEL_LOW;
 
 						switch(channel)
 						{
@@ -2377,7 +2391,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 						break;
 
 					case FALL_FAST:
-						*p_session_state = SESSION_WARNING_UP_CHANNEL_LOW;
+						*p_session_state = SESSION_WARMING_UP_CHANNEL_LOW;
 
 						switch(channel)
 						{
@@ -2529,7 +2543,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 				}
 				else
 				{
-					*p_session_state = SESSION_WARNING_UP_CHANNEL_LOW;
+					*p_session_state = SESSION_WARMING_UP_CHANNEL_LOW;
 
 
 					switch(channel)
@@ -2564,7 +2578,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 			}
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_LOW:
+		case SESSION_WARMING_UP_CHANNEL_LOW:
 #ifdef WITH_SYNC
 			if (ch1_sync_state & SYNC_REQUIRED)
 			{
@@ -2581,7 +2595,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 						if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 							*p_session_burst_cnt = 0;
 
-						*p_session_state = SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL;
+						*p_session_state = SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL;
 					}
 				}
 				else
@@ -2594,7 +2608,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 
 							//me quedo en LOW hasta que CH1 este en LOW
 							if (ch1_sync_state & SYNC_IN_DOWN)
-								*p_session_state = SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL;
+								*p_session_state = SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL;
 							break;
 
 						case CH3:
@@ -2604,7 +2618,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 							//me quedo en LOW mientras CH1 este en LOW, lo atraso un poquito para evitar dobles pulsos
 							//if (!(ch1_sync_state & SYNC_IN_DOWN))
 							if (ch1_sync_state & SYNC_IN_RISING)
-								*p_session_state = SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL;
+								*p_session_state = SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL;
 							break;
 
 						case CH4:
@@ -2613,7 +2627,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 
 							//me quedo en LOW hasta que CH1 este en LOW
 							if (ch1_sync_state & SYNC_IN_DOWN)
-								*p_session_state = SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL;
+								*p_session_state = SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL;
 							break;
 					}
 				}
@@ -2629,7 +2643,7 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 					if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 						*p_session_burst_cnt = 0;
 
-					*p_session_state = SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL;
+					*p_session_state = SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL;
 				}
 			}
 #else
@@ -2640,18 +2654,18 @@ unsigned char Session_Warming_Up_Channels (unsigned char channel)
 				if (*p_session_burst_cnt == ((p_table + (*p_session_channel_step))->burst_mode_on + (p_table + (*p_session_channel_step))->burst_mode_off))
 					*p_session_burst_cnt = 0;
 
-				*p_session_state = SESSION_WARNING_UP_CHANNEL_CHANGE_LEVEL;
+				*p_session_state = SESSION_WARMING_UP_CHANNEL_CHANGE_LEVEL;
 			}
 #endif
 			break;
 
-		case SESSION_WARNING_UP_CHANNEL_END_ERROR:
-			*p_session_state = SESSION_WARNING_UP_CHANNEL_INIT;
+		case SESSION_WARMING_UP_CHANNEL_END_ERROR:
+			*p_session_state = SESSION_WARMING_UP_CHANNEL_INIT;
 			return FIN_ERROR;
 			break;
 
 		default:
-			*p_session_state = SESSION_WARNING_UP_CHANNEL_INIT;
+			*p_session_state = SESSION_WARMING_UP_CHANNEL_INIT;
 			break;
 
 	}
@@ -5060,6 +5074,7 @@ void Session_Channel_2 (void)
 				else if (i == FIN_ERROR)
 				{
 					session_ch_2.status = 0;
+					SetBitGlobalErrors (CH2, BIT_ERROR_ANTENNA);
 
 					sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_DISCONNECTED(2));
 					UART_PC_Send(&buffSendErr[0]);
@@ -5071,7 +5086,7 @@ void Session_Channel_2 (void)
 				if (channel_2_pause == 0)
 				{
 
-					//i = Session_Warning_Up_Channel_2();
+					//los errores pueden ser por calculo de parametros o falta de sync cuando se necesita
 					i = Session_Warming_Up_Channels(CH2);
 
 					if (i == FIN_OK)
@@ -5085,7 +5100,7 @@ void Session_Channel_2 (void)
 
 					}
 
-					if ((i == TRABAJANDO) && (session_warning_up_channel_2_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
+					if ((i == TRABAJANDO) && (session_warning_up_channel_2_state > SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh2();
 					}
@@ -5093,6 +5108,7 @@ void Session_Channel_2 (void)
 					if (i == FIN_ERROR)
 					{
 						session_ch_2.status = 0;
+						SetBitGlobalErrors (CH2, BIT_ERROR_WARMING_UP);
 
 						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_WARNING_UP(2));
 						UART_PC_Send(&buffSendErr[0]);
@@ -5414,6 +5430,7 @@ void Session_Channel_3 (void)
 				else if (i == FIN_ERROR)
 				{
 					session_ch_3.status = 0;
+					SetBitGlobalErrors (CH3, BIT_ERROR_ANTENNA);
 
 					sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_DISCONNECTED(3));
 					UART_PC_Send(&buffSendErr[0]);
@@ -5425,7 +5442,7 @@ void Session_Channel_3 (void)
 				if (channel_3_pause == 0)
 				{
 
-					//i = Session_Warning_Up_Channel_3();
+					//los errores pueden ser por calculo de parametros o falta de sync cuando se necesita
 					i = Session_Warming_Up_Channels(CH3);
 
 					if (i == FIN_OK)
@@ -5439,7 +5456,7 @@ void Session_Channel_3 (void)
 
 					}
 
-					if ((i == TRABAJANDO) && (session_warning_up_channel_3_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
+					if ((i == TRABAJANDO) && (session_warning_up_channel_3_state > SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh3();
 					}
@@ -5447,6 +5464,7 @@ void Session_Channel_3 (void)
 					if (i == FIN_ERROR)
 					{
 						session_ch_3.status = 0;
+						SetBitGlobalErrors (CH3, BIT_ERROR_WARMING_UP);
 
 						sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_WARNING_UP(3));
 						UART_PC_Send(&buffSendErr[0]);
@@ -5766,10 +5784,7 @@ void Session_Channel_4 (void)
 				else if (i == FIN_ERROR)
 				{
 					session_ch_4.status = 0;
-
-					PWM_CH4_TiempoSubida(0); //pwm 200V.
-					PWM_CH4_TiempoMantenimiento(0);
-					PWM_CH4_TiempoBajada(0);
+					SetBitGlobalErrors (CH4, BIT_ERROR_ANTENNA);
 
 					sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_DISCONNECTED(4));
 					UART_PC_Send(&buffSendErr[0]);
@@ -5784,7 +5799,8 @@ void Session_Channel_4 (void)
 					LED1_ON;
 					LED2_OFF;
 					//LED3_OFF;
-					//i = Session_Warning_Up_Channel_4();
+
+					//los errores pueden ser por calculo de parametros o falta de sync cuando se necesita
 					i = Session_Warming_Up_Channels(CH4);
 
 					if (i == FIN_OK)
@@ -5798,7 +5814,7 @@ void Session_Channel_4 (void)
 
 					}
 
-					if ((i == TRABAJANDO) && (session_warning_up_channel_4_state > SESSION_WARNING_UP_CHANNEL_PARAMETERS_CALCULATE))
+					if ((i == TRABAJANDO) && (session_warning_up_channel_4_state > SESSION_WARMING_UP_CHANNEL_PARAMETERS_CALCULATE))
 					{
 						Current_Limit_CheckCh4();
 					}
@@ -5806,6 +5822,7 @@ void Session_Channel_4 (void)
 					if (i == FIN_ERROR)
 					{
 						session_ch_4.status = 0;
+						SetBitGlobalErrors (CH4, BIT_ERROR_WARMING_UP);
 
 						PWM_CH4_TiempoSubida(0); //pwm 200V.
 						PWM_CH4_TiempoMantenimiento(0);
@@ -6193,6 +6210,7 @@ unsigned char Current_Limit_CheckCh1 (void)
 			else
 			{
 				Session_Channel_1_Stop();
+				SetBitGlobalErrors (CH1, BIT_ERROR_CURRENT);
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(1));
 				UART_PC_Send(&buffSendErr[0]);
@@ -6217,6 +6235,7 @@ unsigned char Current_Limit_CheckCh2 (void)
 			else
 			{
 				Session_Channel_2_Stop();
+				SetBitGlobalErrors (CH2, BIT_ERROR_CURRENT);
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(2));
 				UART_PC_Send(&buffSendErr[0]);
@@ -6241,6 +6260,7 @@ unsigned char Current_Limit_CheckCh3 (void)
 			else
 			{
 				Session_Channel_3_Stop();
+				SetBitGlobalErrors (CH3, BIT_ERROR_CURRENT);
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(3));
 				UART_PC_Send(&buffSendErr[0]);
@@ -6265,6 +6285,7 @@ unsigned char Current_Limit_CheckCh4 (void)
 			else
 			{
 				Session_Channel_4_Stop();
+				SetBitGlobalErrors (CH4, BIT_ERROR_CURRENT);
 
 				sprintf(&buffSendErr[0], (const char *) "ERROR(0x%03X)\r\n", ERR_CHANNEL_ANTENNA_CURRENT_OUT_OF_RANGE(4));
 				UART_PC_Send(&buffSendErr[0]);
@@ -6284,6 +6305,86 @@ void Current_Limit_Counter_Reset (void)
 	current_limit_cnt_ch2 = 0;
 	current_limit_cnt_ch3 = 0;
 	current_limit_cnt_ch4 = 0;
+}
+
+//--- Para errores globales de antena
+//
+void CheckforGlobalErrors (void)
+{
+	//primero me fijo si tengo que revisar los canales
+	if ((global_error_ch1 & BIT_ERROR_CHECK) &&
+			(global_error_ch2 & BIT_ERROR_CHECK) &&
+			(global_error_ch3 & BIT_ERROR_CHECK) &&
+			(global_error_ch4 & BIT_ERROR_CHECK))
+	{
+		if ((global_error_ch1 & BIT_ERROR_CHECK_MASK) &&
+				(global_error_ch2 & BIT_ERROR_CHECK_MASK) &&
+				(global_error_ch3 & BIT_ERROR_CHECK_MASK) &&
+				(global_error_ch4 & BIT_ERROR_CHECK_MASK))
+		{
+			//tengo error en todos los canales, aviso del error para parar display
+			UART_PC_Send((char *) (const char *) "STOP\r\n");
+			ResetCheckGlobalErrors ();
+		}
+	}
+}
+
+void SetCheckGlobalErrors (unsigned char channel)
+{
+	switch (channel)
+	{
+		case CH1:
+			global_error_ch1 |= BIT_ERROR_CHECK;
+			break;
+
+		case CH2:
+			global_error_ch2 |= BIT_ERROR_CHECK;
+			break;
+
+		case CH3:
+			global_error_ch3 |= BIT_ERROR_CHECK;
+			break;
+
+		case CH4:
+			global_error_ch4 |= BIT_ERROR_CHECK;
+			break;
+
+		default:
+			break;
+	}
+}
+
+void ResetCheckGlobalErrors (void)
+{
+	global_error_ch1 = 0x00;
+	global_error_ch2 = 0x00;
+	global_error_ch3 = 0x00;
+	global_error_ch4 = 0x00;
+}
+
+void SetBitGlobalErrors (unsigned char channel, unsigned char bit_err)
+{
+	switch (channel)
+	{
+		case CH1:
+			global_error_ch1 |= bit_err;
+			break;
+
+		case CH2:
+			global_error_ch2 |= bit_err;
+			break;
+
+		case CH3:
+			global_error_ch3 |= bit_err;
+			break;
+
+		case CH4:
+			global_error_ch4 |= bit_err;
+			break;
+
+		default:
+			break;
+	}
 }
 
 void Signal_TIM1MS (void)

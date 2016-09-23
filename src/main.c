@@ -178,6 +178,9 @@ int main (void)
 		//Recepcion de la configuracion por PC.
 		UART_PC_Receive();
 
+		//Chequeo de errores globales
+		CheckforGlobalErrors();
+
 	}
 }
 

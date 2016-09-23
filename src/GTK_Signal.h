@@ -97,6 +97,21 @@ unsigned char Current_Limit_CheckCh3 (void);
 unsigned char Current_Limit_CheckCh4 (void);
 void Current_Limit_Counter_Reset (void);
 
+//--- Para errores globales de antena
+//
+#define BIT_ERROR_CHECK				0x01
+#define BIT_ERROR_PARAMS_FINISH		0x02
+#define BIT_ERROR_CHECK_MASK		0xF0
+
+#define BIT_ERROR_ANTENNA			0x10
+#define BIT_ERROR_WARMING_UP		0x20
+#define BIT_ERROR_CURRENT			0x40
+//
+void CheckforGlobalErrors (void);
+void SetCheckGlobalErrors (unsigned char );
+void ResetCheckGlobalErrors (void);
+void SetBitGlobalErrors (unsigned char, unsigned char);
+
 //--- end ---//
 
 //--- New code ---//

@@ -1199,6 +1199,8 @@ buffUART1rx2[0] = '\0';
 			Session_Channel_2_Start();
 			Session_Channel_3_Start();
 			Session_Channel_4_Start();
+
+			ResetCheckGlobalErrors ();
 			Current_Limit_Counter_Reset ();
 
 			UART_PC_Send((char *)"OK\r\n");
