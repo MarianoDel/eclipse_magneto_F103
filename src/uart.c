@@ -37,7 +37,8 @@ extern unsigned char channel_4_pause;
 
 //--- USART1 ---//
 #define BUFFUART1RX_DIM 256
-#define BUFFUART1TX_DIM BUFFUART1RX_DIM + 64
+//#define BUFFUART1TX_DIM BUFFUART1RX_DIM + 64
+#define BUFFUART1TX_DIM BUFFUART1RX_DIM + 256
 volatile char buffUART1rx[BUFFUART1RX_DIM];
 volatile char buffUART1rx2[BUFFUART1RX_DIM];
 volatile char *pBuffUART1rxW;
@@ -725,15 +726,17 @@ void UART5_Config(void){
 	UART5->CR1 = 0x202C; //8N1
 }
 
-void UART1Send(const char * ptrSend)
+void UART1Send(char * ptrSend)
 {
-	unsigned char datos = strlen ((const char *) &ptrSend[0]);
+	unsigned short datos = 0;
+
+	datos = strlen (ptrSend);
 
 	if (datos < BUFFUART1TX_DIM)
 	{
+//		USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
 		if ((pBuffUART1txW + datos + 1) < &buffUART1tx[BUFFUART1TX_DIM])
 		{
-			//strncpy((char *)pBuffUART1txW, (const char *)&ptrSend[0], datos);
 			strcat((char *)pBuffUART1txW, ptrSend);
 		}
 		else
@@ -901,7 +904,8 @@ buffUART1rx2[0] = '\0';
 						antenna.temp_max_int,
 						antenna.temp_max_dec);
 
-			UART_PC_Send((const char *) buffUART1rx2);
+			//UART_PC_Send((const char *) buffUART1rx2);
+			UART_PC_Send((char *) buffUART1rx2);
 			buffUART1rx2[0] = '\0';
 
 			Session_Get_Antenna (&session_ch_2, 1, &antenna);
@@ -916,7 +920,8 @@ buffUART1rx2[0] = '\0';
 						antenna.temp_max_int,
 						antenna.temp_max_dec);
 
-			UART_PC_Send((const char *) buffUART1rx2);
+			//UART_PC_Send((const char *) buffUART1rx2);
+			UART_PC_Send((char *) buffUART1rx2);
 			buffUART1rx2[0] = '\0';
 
 			Session_Get_Antenna (&session_ch_3, 1, &antenna);
@@ -931,7 +936,7 @@ buffUART1rx2[0] = '\0';
 						antenna.temp_max_int,
 						antenna.temp_max_dec);
 
-			UART_PC_Send((const char *) buffUART1rx2);
+			UART_PC_Send((char *) buffUART1rx2);
 			buffUART1rx2[0] = '\0';
 
 			Session_Get_Antenna (&session_ch_4, 1, &antenna);
@@ -946,35 +951,35 @@ buffUART1rx2[0] = '\0';
 						antenna.temp_max_int,
 						antenna.temp_max_dec);
 
-			UART_PC_Send((const char *) buffUART1rx2);
+			UART_PC_Send((char *) buffUART1rx2);
 			buffUART1rx2[0] = '\0';
 
 			if (Get_Antenna_Name(CH1, (char *) &buffUART1rx2[0]) != 0)
 			{
-				UART_PC_Send((const char *) "ant_name,1,");
-				UART_PC_Send((const char *) buffUART1rx2);
-				UART_PC_Send((const char *) "\r\n");
+				UART_PC_Send((char *) (const char *) "ant_name,1,");
+				UART_PC_Send((char *) buffUART1rx2);
+				UART_PC_Send((char *) (const char *) "\r\n");
 			}
 
 			if (Get_Antenna_Name(CH2, (char *) &buffUART1rx2[0]) != 0)
 			{
-				UART_PC_Send((const char *) "ant_name,2,");
-				UART_PC_Send((const char *) buffUART1rx2);
-				UART_PC_Send((const char *) "\r\n");
+				UART_PC_Send((char *) (const char *) "ant_name,2,");
+				UART_PC_Send((char *) buffUART1rx2);
+				UART_PC_Send((char *) (const char *) "\r\n");
 			}
 
 			if (Get_Antenna_Name(CH3, (char *) &buffUART1rx2[0]) != 0)
 			{
-				UART_PC_Send((const char *) "ant_name,3,");
-				UART_PC_Send((const char *) buffUART1rx2);
-				UART_PC_Send((const char *) "\r\n");
+				UART_PC_Send((char *) (const char *) "ant_name,3,");
+				UART_PC_Send((char *) buffUART1rx2);
+				UART_PC_Send((char *) (const char *) "\r\n");
 			}
 
 			if (Get_Antenna_Name(CH4, (char *) &buffUART1rx2[0]) != 0)
 			{
-				UART_PC_Send((const char *) "ant_name,4,");
-				UART_PC_Send((const char *) buffUART1rx2);
-				UART_PC_Send((const char *) "\r\n");
+				UART_PC_Send((char *) (const char *) "ant_name,4,");
+				UART_PC_Send((char *) buffUART1rx2);
+				UART_PC_Send((char *) (const char *) "\r\n");
 			}
 
 			buffUART1rx2[0] = '\0';
@@ -1194,6 +1199,7 @@ buffUART1rx2[0] = '\0';
 			Session_Channel_2_Start();
 			Session_Channel_3_Start();
 			Session_Channel_4_Start();
+			Current_Limit_Counter_Reset ();
 
 			UART_PC_Send((char *)"OK\r\n");
 		}

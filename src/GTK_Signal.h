@@ -89,12 +89,13 @@ unsigned char Session_Cooling_Down_Channel_4(void);
 unsigned char Session_Cooling_Down_Channel_4_Parameters_Calculate(void);
 void Session_Cooling_Down_Channel_4_Restart(void);
 
-
+//-- Para control de corriente en los canales
 void Session_Current_Limit_control (void);
 unsigned char Current_Limit_CheckCh1 (void);
 unsigned char Current_Limit_CheckCh2 (void);
 unsigned char Current_Limit_CheckCh3 (void);
 unsigned char Current_Limit_CheckCh4 (void);
+void Current_Limit_Counter_Reset (void);
 
 //--- end ---//
 

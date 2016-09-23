@@ -26,7 +26,7 @@
 
 
 void UART1_Config(void);
-void UART1Send(const char * ptrSend);
+void UART1Send(char * ptrSend);
 void UART2_Config(void);
 void UART2Send(char * ptrSend);
 void UART3_Config(void);
