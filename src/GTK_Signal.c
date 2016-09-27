@@ -1080,8 +1080,8 @@ unsigned char Session_Channels_Parameters_Calculate(unsigned char channel, unsig
 	current_limit /= 100;
 	current_limit += (float)p_session->stage_1_current_limit_int;
 
-	//tengo 285mV / A + offset 640mV o 720mV en algunos casos
-	peak_c = (current_limit * 1.4) * 0.285 + 0.72;		//convierto corriente max a tensión con 40% de margen
+	//tengo 196mV / A + offset 456mV
+	peak_c = (current_limit * 1.5) * 0.196 + 0.46;		//convierto corriente max a tensión con 50% de margen
 	peak_c = peak_c * 0.303;	//divido 3.3V
 	peak_c = peak_c * 4095;		//valor pico permitido en ADC
 
